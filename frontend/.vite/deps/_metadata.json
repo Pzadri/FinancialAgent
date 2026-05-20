@@ -1,0 +1,37 @@
+{
+  "hash": "499c3686",
+  "configHash": "85e190f2",
+  "lockfileHash": "0ff64b9e",
+  "browserHash": "1c43609f",
+  "optimized": {
+    "vue": {
+      "src": "../../node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "30967f40",
+      "needsInterop": false
+    },
+    "primevue/config": {
+      "src": "../../node_modules/primevue/config/index.mjs",
+      "file": "primevue_config.js",
+      "fileHash": "8a44db61",
+      "needsInterop": false
+    },
+    "@primevue/themes/aura": {
+      "src": "../../node_modules/@primevue/themes/aura/index.mjs",
+      "file": "@primevue_themes_aura.js",
+      "fileHash": "8a4420a6",
+      "needsInterop": false
+    },
+    "vue-router": {
+      "src": "../../node_modules/vue-router/dist/vue-router.mjs",
+      "file": "vue-router.js",
+      "fileHash": "6eceb771",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-ZDU4EOR2": {
+      "file": "chunk-ZDU4EOR2.js"
+    }
+  }
+}

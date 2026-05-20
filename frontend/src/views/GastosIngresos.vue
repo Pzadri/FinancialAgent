@@ -1,6 +1,11 @@
 <template>
   <div class="gastos-ingresos">
-    <h1 class="page-title">Gastos / Ingresos</h1>
+    <div class="page-header">
+      <h1 class="page-title">Gastos / Ingresos</h1>
+      <router-link to="/gastos-ingresos/registro" class="btn-register">
+        <i class="pi pi-plus"></i> Registrar
+      </router-link>
+    </div>
 
     <!-- Filtros -->
     <div class="filters-bar">
@@ -249,8 +254,35 @@ function clearFilters() {
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   color: #e1e8ed;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.btn-register {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-register:hover {
+  background-color: #1a91da;
 }
 
 /* Filtros */
