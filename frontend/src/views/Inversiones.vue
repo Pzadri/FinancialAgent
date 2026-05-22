@@ -14,22 +14,22 @@
       <div class="stat-card">
         <div class="stat-icon savings"><i class="pi pi-wallet"></i></div>
         <div class="stat-info">
-          <span class="stat-label">Ahorro (Revolut + Didi + Nu)</span>
-          <span class="stat-value">${{ totalSavings.toLocaleString() }}</span>
+          <span class="stat-label">Liquidez</span>
+          <span class="stat-value">${{ liquidez.toLocaleString() }}</span>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon loans"><i class="pi pi-users"></i></div>
+        <div class="stat-icon savings"><i class="pi pi-wallet"></i></div>
         <div class="stat-info">
-          <span class="stat-label">Préstamos Activos</span>
-          <span class="stat-value">${{ totalLoans.toLocaleString() }}</span>
+          <span class="stat-label">Ingreso Diario</span>
+          <span class="stat-value">+${{ dailyIncomeRevolutNu.toFixed(2) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon market"><i class="pi pi-chart-line"></i></div>
         <div class="stat-info">
-          <span class="stat-label">GBM + Afore</span>
-          <span class="stat-value">${{ totalMarket.toLocaleString() }}</span>
+          <span class="stat-label">Ingreso Congelado</span>
+          <span class="stat-value">${{ frozenIncome.toLocaleString() }}</span>
         </div>
       </div>
     </div>
@@ -132,7 +132,6 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Prestatario</th>
               <th>Capital</th>
               <th>Tasa</th>
               <th>Plazo</th>
@@ -144,7 +143,6 @@
           </thead>
           <tbody>
             <tr v-for="loan in loans" :key="loan.id">
-              <td>{{ loan.borrower }}</td>
               <td>${{ loan.principal.toLocaleString() }}</td>
               <td><span class="rate-badge-sm">{{ loan.rate }}%</span></td>
               <td>{{ loan.term }}</td>
@@ -184,7 +182,7 @@
           </div>
           <div class="afore-stat">
             <span class="afore-stat-label">Aportación Voluntaria</span>
-            <span class="afore-stat-value">${{ afore.voluntaryContribution.toLocaleString() }}/mes</span>
+            <span class="afore-stat-value">${{ afore.voluntaryContribution.toLocaleString() }}/semana</span>
           </div>
         </div>
 
@@ -202,97 +200,119 @@
     <div v-if="activeTab === 'gbm'" class="section-content">
       <div class="gbm-header-info">
         <h2>GBM - Inversiones</h2>
-        <p class="section-desc">Portafolio de inversiones nacionales e internacionales</p>
+        <p class="section-desc">Portafolio de inversiones nacionales e internacionales (datos desde Excel)</p>
       </div>
 
-      <div class="gbm-summary">
-        <div class="gbm-stat">
-          <span class="gbm-stat-label">Valor del Portafolio</span>
-          <span class="gbm-stat-value">${{ gbmTotal.toLocaleString() }}</span>
-        </div>
-        <div class="gbm-stat">
-          <span class="gbm-stat-label">Rendimiento Total</span>
-          <span class="gbm-stat-value" :class="gbmTotalReturn >= 0 ? 'income' : 'expense'">
-            {{ gbmTotalReturn >= 0 ? '+' : '' }}{{ gbmTotalReturn.toFixed(2) }}%
-          </span>
-        </div>
-        <div class="gbm-stat">
-          <span class="gbm-stat-label">Ganancia/Pérdida</span>
-          <span class="gbm-stat-value" :class="gbmTotalGain >= 0 ? 'income' : 'expense'">
-            {{ gbmTotalGain >= 0 ? '+' : '' }}${{ gbmTotalGain.toLocaleString() }}
-          </span>
-        </div>
+      <div v-if="gbmLoading" class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i> Cargando portafolio...
       </div>
 
-      <!-- Distribución del portafolio -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <h3>Distribución del Portafolio</h3>
-          <Doughnut :data="gbmDistributionData" :options="doughnutOptions" />
-        </div>
-        <div class="chart-card">
-          <h3>Rendimiento por Instrumento</h3>
-          <Bar :data="gbmPerformanceData" :options="barOptions" />
-        </div>
-      </div>
-
-      <!-- Tabla de instrumentos -->
-      <div class="table-card">
-        <h3>Detalle de Instrumentos</h3>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Instrumento</th>
-              <th>Tipo</th>
-              <th>Mercado</th>
-              <th>Títulos</th>
-              <th>Precio Compra</th>
-              <th>Precio Actual</th>
-              <th>Valor Actual</th>
-              <th>Rendimiento</th>
-              <th>Recomendación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="inv in gbmInvestments" :key="inv.ticker">
-              <td>
-                <div class="ticker-cell">
-                  <span class="ticker-name">{{ inv.ticker }}</span>
-                  <span class="ticker-desc">{{ inv.name }}</span>
-                </div>
-              </td>
-              <td><span class="type-badge-inv" :class="inv.type">{{ inv.typeLabel }}</span></td>
-              <td>{{ inv.market }}</td>
-              <td>{{ inv.shares }}</td>
-              <td>${{ inv.buyPrice.toLocaleString() }}</td>
-              <td>${{ inv.currentPrice.toLocaleString() }}</td>
-              <td>${{ inv.currentValue.toLocaleString() }}</td>
-              <td :class="inv.returnPct >= 0 ? 'income' : 'expense'">
-                {{ inv.returnPct >= 0 ? '+' : '' }}{{ inv.returnPct.toFixed(2) }}%
-              </td>
-              <td>
-                <span class="recommendation" :class="inv.recommendation">
-                  {{ inv.recommendationLabel }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Análisis por instrumento -->
-      <div class="analysis-grid">
-        <div v-for="inv in gbmInvestments" :key="'analysis-' + inv.ticker" class="analysis-card">
-          <div class="analysis-header">
-            <span class="ticker-tag">{{ inv.ticker }}</span>
-            <span class="recommendation" :class="inv.recommendation">{{ inv.recommendationLabel }}</span>
+      <div v-else>
+        <div class="gbm-summary">
+          <div class="gbm-stat">
+            <span class="gbm-stat-label">Valor Total (MXN)</span>
+            <span class="gbm-stat-value">${{ gbmSummary.totalValueMXN.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
           </div>
-          <p class="analysis-text">{{ inv.analysis }}</p>
-          <div class="analysis-metrics">
-            <span>P/E: {{ inv.pe || 'N/A' }}</span>
-            <span>Dividendo: {{ inv.dividend || 'N/A' }}</span>
-            <span>Beta: {{ inv.beta || 'N/A' }}</span>
+          <div class="gbm-stat">
+            <span class="gbm-stat-label">Nacional (MXN)</span>
+            <span class="gbm-stat-value">${{ gbmSummary.nacionalValueMXN.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
           </div>
+          <div class="gbm-stat">
+            <span class="gbm-stat-label">USA (USD)</span>
+            <span class="gbm-stat-value">${{ gbmSummary.usaValueUSD.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
+          </div>
+          <div class="gbm-stat">
+            <span class="gbm-stat-label">Rendimiento Total</span>
+            <span class="gbm-stat-value" :class="gbmSummary.totalReturnPct >= 0 ? 'income' : 'expense'">
+              {{ gbmSummary.totalReturnPct >= 0 ? '+' : '' }}{{ gbmSummary.totalReturnPct.toFixed(2) }}%
+            </span>
+          </div>
+          <div class="gbm-stat">
+            <span class="gbm-stat-label">TC USD/MXN</span>
+            <span class="gbm-stat-value">${{ gbmSummary.usdMxnRate }}</span>
+          </div>
+        </div>
+
+        <!-- Gráficas -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Distribución del Portafolio</h3>
+            <Doughnut :data="gbmDistributionData" :options="doughnutOptions" />
+          </div>
+          <div class="chart-card">
+            <h3>Rendimiento por Instrumento (%)</h3>
+            <Bar :data="gbmPerformanceData" :options="barOptions" />
+            <div class="performance-cash-chart">
+              <h4>Rendimiento en Efectivo ($)</h4>
+              <Bar :data="gbmCashPerformanceData" :options="barOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla Nacional -->
+        <div class="table-card">
+          <h3>Mercado Nacional (MXN)</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Emisora</th>
+                <th>Títulos</th>
+                <th>Costo Prom.</th>
+                <th>Precio Mercado</th>
+                <th>Valor Mercado</th>
+                <th>+/- $</th>
+                <th>Rendimiento %</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="inv in gbmNacional" :key="inv.ticker">
+                <td><span class="ticker-name">{{ inv.ticker }}</span></td>
+                <td>{{ inv.shares }}</td>
+                <td>${{ inv.avgCost.toFixed(2) }}</td>
+                <td>${{ inv.marketPrice.toFixed(2) }}</td>
+                <td>${{ inv.marketValue.toFixed(2) }}</td>
+                <td :class="inv.gainLoss >= 0 ? 'income' : 'expense'">
+                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ inv.gainLoss.toFixed(2) }}
+                </td>
+                <td :class="inv.returnPct >= 0 ? 'income' : 'expense'">
+                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ inv.returnPct.toFixed(2) }}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tabla USA -->
+        <div class="table-card">
+          <h3>Mercado USA (USD)</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Emisora</th>
+                <th>Títulos</th>
+                <th>Costo Prom.</th>
+                <th>Precio Mercado</th>
+                <th>Valor (USD)</th>
+                <th>+/- $</th>
+                <th>Rendimiento %</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="inv in gbmUSA" :key="inv.ticker">
+                <td><span class="ticker-name">{{ inv.ticker }}</span></td>
+                <td>{{ inv.shares.toFixed(8) }}</td>
+                <td>${{ inv.avgCost.toFixed(2) }}</td>
+                <td>${{ inv.marketPrice.toFixed(2) }}</td>
+                <td>${{ inv.marketValue.toFixed(2) }}</td>
+                <td :class="inv.gainLoss >= 0 ? 'income' : 'expense'">
+                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ inv.gainLoss.toFixed(2) }}
+                </td>
+                <td :class="inv.returnPct >= 0 ? 'income' : 'expense'">
+                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ inv.returnPct.toFixed(2) }}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -300,8 +320,9 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { Line, Doughnut, Bar } from 'vue-chartjs'
+import axios from 'axios'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -338,35 +359,21 @@ const periods = [
 ]
 
 // ===== CUENTAS DE AHORRO =====
-const savingsAccounts = reactive([
-  {
-    name: 'Revolut',
-    description: 'Cuenta de ahorro personal',
-    color: '#0075eb',
-    balance: 28500,
-    annualRate: 15,
-    dailyGain: (28500 * 0.15) / 365,
-    selectedPeriod: '1m'
-  },
-  {
-    name: 'Didi',
-    description: 'Ahorro compartido con novia',
-    color: '#ff6600',
-    balance: 42000,
-    annualRate: 15,
-    dailyGain: (42000 * 0.15) / 365,
-    selectedPeriod: '1m'
-  },
-  {
-    name: 'Cajita Nu',
-    description: 'Ahorro Nu',
-    color: '#820ad1',
-    balance: 18700,
-    annualRate: 13,
-    dailyGain: (18700 * 0.13) / 365,
-    selectedPeriod: '1m'
-  }
-])
+const savingsAccounts = reactive([])
+
+// ===== PRÉSTAMOS =====
+const loans = ref([])
+const totalLoans = ref(0)
+const totalLoanInterest = ref(0)
+const avgLoanRate = ref(0)
+
+// ===== AFORE =====
+const afore = reactive({
+  balance: 0,
+  annualReturn: 0,
+  bimonthlyContribution: 0,
+  voluntaryContribution: 0
+})
 
 function getCompoundData(balance, annualRate, periodKey) {
   const period = periods.find(p => p.key === periodKey)
@@ -436,36 +443,16 @@ const lineOptions = {
   }
 }
 
-// ===== PRÉSTAMOS =====
-const loans = [
-  { id: 1, borrower: 'Carlos M.', principal: 5000, rate: 12, term: '3 meses', expectedInterest: 600, totalReturn: 5600, status: 'active', statusLabel: 'Activo', dueDate: '2026-07-15' },
-  { id: 2, borrower: 'Ana R.', principal: 8000, rate: 10, term: '6 meses', expectedInterest: 800, totalReturn: 8800, status: 'active', statusLabel: 'Activo', dueDate: '2026-09-20' },
-  { id: 3, borrower: 'Luis P.', principal: 3000, rate: 15, term: '2 meses', expectedInterest: 450, totalReturn: 3450, status: 'active', statusLabel: 'Activo', dueDate: '2026-06-30' },
-  { id: 4, borrower: 'María G.', principal: 12000, rate: 8, term: '12 meses', expectedInterest: 960, totalReturn: 12960, status: 'active', statusLabel: 'Activo', dueDate: '2027-01-10' },
-  { id: 5, borrower: 'Pedro S.', principal: 2000, rate: 18, term: '1 mes', expectedInterest: 360, totalReturn: 2360, status: 'paid', statusLabel: 'Pagado', dueDate: '2026-05-01' }
-]
+// (loans loaded from API)
 
-const totalLoans = computed(() => loans.filter(l => l.status === 'active').reduce((s, l) => s + l.principal, 0))
-const totalLoanInterest = computed(() => loans.filter(l => l.status === 'active').reduce((s, l) => s + l.expectedInterest, 0))
-const avgLoanRate = computed(() => {
-  const active = loans.filter(l => l.status === 'active')
-  return (active.reduce((s, l) => s + l.rate, 0) / active.length).toFixed(1)
-})
-
-// ===== AFORE =====
-const afore = {
-  balance: 85000,
-  annualReturn: 9.5,
-  bimonthlyContribution: 3200,
-  voluntaryContribution: 1500
-}
+// ===== AFORE (chart computeds) =====
 
 const aforeChartData = computed(() => {
   const labels = []
   const data = []
   let balance = afore.balance
   const monthlyRate = afore.annualReturn / 100 / 12
-  const monthlyContrib = afore.bimonthlyContribution / 2 + afore.voluntaryContribution
+  const monthlyContrib = afore.bimonthlyContribution / 2 + (afore.voluntaryContribution * 4.33)
 
   for (let year = 0; year <= 30; year += 5) {
     labels.push(`Año ${year}`)
@@ -491,148 +478,109 @@ const aforeChartData = computed(() => {
 const aforeProjection30 = computed(() => {
   let balance = afore.balance
   const monthlyRate = afore.annualReturn / 100 / 12
-  const monthlyContrib = afore.bimonthlyContribution / 2 + afore.voluntaryContribution
+  const monthlyContrib = afore.bimonthlyContribution / 2 + (afore.voluntaryContribution * 4.33)
   for (let m = 0; m < 360; m++) {
     balance = balance * (1 + monthlyRate) + monthlyContrib
   }
   return balance
 })
 
-// ===== GBM =====
-const gbmInvestments = [
-  {
-    ticker: 'VOO',
-    name: 'Vanguard S&P 500 ETF',
-    type: 'etf',
-    typeLabel: 'ETF',
-    market: 'Internacional',
-    shares: 5,
-    buyPrice: 8200,
-    currentPrice: 9100,
-    currentValue: 45500,
-    returnPct: 10.98,
-    recommendation: 'buy',
-    recommendationLabel: 'Comprar',
-    analysis: 'ETF que replica el S&P 500. Rendimiento histórico sólido del ~10% anual. Diversificación amplia en las 500 empresas más grandes de EE.UU. Excelente para largo plazo.',
-    pe: '22.5',
-    dividend: '1.3%',
-    beta: '1.0'
-  },
-  {
-    ticker: 'QQQ',
-    name: 'Invesco Nasdaq 100 ETF',
-    type: 'etf',
-    typeLabel: 'ETF',
-    market: 'Internacional',
-    shares: 3,
-    buyPrice: 7500,
-    currentPrice: 8400,
-    currentValue: 25200,
-    returnPct: 12.0,
-    recommendation: 'buy',
-    recommendationLabel: 'Comprar',
-    analysis: 'Exposición a las 100 empresas tecnológicas más grandes del Nasdaq. Mayor volatilidad pero mayor potencial de crecimiento. Ideal si se busca exposición tech.',
-    pe: '28.3',
-    dividend: '0.5%',
-    beta: '1.15'
-  },
-  {
-    ticker: 'FIBRAMQ',
-    name: 'Fibra Macquarie',
-    type: 'fibra',
-    typeLabel: 'FIBRA',
-    market: 'Nacional',
-    shares: 200,
-    buyPrice: 22,
-    currentPrice: 24.5,
-    currentValue: 4900,
-    returnPct: 11.36,
-    recommendation: 'hold',
-    recommendationLabel: 'Mantener',
-    analysis: 'FIBRA industrial con propiedades en zonas de nearshoring. Buen dividendo trimestral. El sector industrial mexicano se beneficia del nearshoring pero ya tiene mucho del rally incorporado.',
-    pe: '14.2',
-    dividend: '7.8%',
-    beta: '0.7'
-  },
-  {
-    ticker: 'NAFTRAC',
-    name: 'iShares NAFTRAC',
-    type: 'etf',
-    typeLabel: 'ETF',
-    market: 'Nacional',
-    shares: 50,
-    buyPrice: 52,
-    currentPrice: 48.5,
-    currentValue: 2425,
-    returnPct: -6.73,
-    recommendation: 'hold',
-    recommendationLabel: 'Mantener',
-    analysis: 'Replica el IPC de la BMV. El mercado mexicano ha tenido presión por incertidumbre política y tipo de cambio. A estos niveles puede ser oportunidad de acumulación a largo plazo.',
-    pe: '16.8',
-    dividend: '2.1%',
-    beta: '1.0'
-  },
-  {
-    ticker: 'AMZN',
-    name: 'Amazon',
-    type: 'stock',
-    typeLabel: 'Acción',
-    market: 'Internacional',
-    shares: 2,
-    buyPrice: 3200,
-    currentPrice: 3650,
-    currentValue: 7300,
-    returnPct: 14.06,
-    recommendation: 'buy',
-    recommendationLabel: 'Comprar',
-    analysis: 'Líder en e-commerce y cloud (AWS). Crecimiento sostenido en servicios cloud y publicidad. Valuación razonable considerando el crecimiento de AWS y la mejora en márgenes de retail.',
-    pe: '35.2',
-    dividend: 'N/A',
-    beta: '1.2'
-  },
-  {
-    ticker: 'BIMBOA',
-    name: 'Grupo Bimbo',
-    type: 'stock',
-    typeLabel: 'Acción',
-    market: 'Nacional',
-    shares: 100,
-    buyPrice: 68,
-    currentPrice: 72,
-    currentValue: 7200,
-    returnPct: 5.88,
-    recommendation: 'hold',
-    recommendationLabel: 'Mantener',
-    analysis: 'Empresa defensiva con presencia global. Crecimiento estable pero limitado. Buenos fundamentales y dividendo consistente. Buena opción para estabilidad en el portafolio.',
-    pe: '24.1',
-    dividend: '1.5%',
-    beta: '0.6'
+// ===== GBM (from API) =====
+const gbmLoading = ref(true)
+const gbmNacional = ref([])
+const gbmUSA = ref([])
+const gbmSummary = ref({
+  nacionalValueMXN: 0,
+  usaValueUSD: 0,
+  usaValueMXN: 0,
+  totalValueMXN: 0,
+  totalGainMXN: 0,
+  totalReturnPct: 0,
+  usdMxnRate: 19.45
+})
+
+const gbmColors = ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#e11d48', '#a855f7']
+
+const gbmDistributionData = computed(() => {
+  const allInstruments = [...gbmNacional.value, ...gbmUSA.value]
+  return {
+    labels: allInstruments.map(i => i.ticker),
+    datasets: [{
+      data: allInstruments.map(i => i.marketValue),
+      backgroundColor: allInstruments.map((_, idx) => gbmColors[idx % gbmColors.length]),
+      borderWidth: 0
+    }]
   }
-]
+})
 
-const gbmTotal = computed(() => gbmInvestments.reduce((s, i) => s + i.currentValue, 0))
-const gbmTotalCost = computed(() => gbmInvestments.reduce((s, i) => s + (i.buyPrice * i.shares), 0))
-const gbmTotalGain = computed(() => gbmTotal.value - gbmTotalCost.value)
-const gbmTotalReturn = computed(() => ((gbmTotalGain.value / gbmTotalCost.value) * 100))
+const gbmPerformanceData = computed(() => {
+  const allInstruments = [...gbmNacional.value, ...gbmUSA.value].filter(i => i.returnPct !== 0)
+  return {
+    labels: allInstruments.map(i => i.ticker),
+    datasets: [{
+      label: 'Rendimiento %',
+      data: allInstruments.map(i => i.returnPct),
+      backgroundColor: allInstruments.map(i => i.returnPct >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+      borderRadius: 4
+    }]
+  }
+})
 
-const gbmDistributionData = computed(() => ({
-  labels: gbmInvestments.map(i => i.ticker),
-  datasets: [{
-    data: gbmInvestments.map(i => i.currentValue),
-    backgroundColor: ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
-    borderWidth: 0
-  }]
-}))
+const allGbmInstruments = computed(() => [...gbmNacional.value, ...gbmUSA.value].filter(i => i.gainLoss !== 0))
 
-const gbmPerformanceData = computed(() => ({
-  labels: gbmInvestments.map(i => i.ticker),
-  datasets: [{
-    label: 'Rendimiento %',
-    data: gbmInvestments.map(i => i.returnPct),
-    backgroundColor: gbmInvestments.map(i => i.returnPct >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
-    borderRadius: 4
-  }]
-}))
+const gbmCashPerformanceData = computed(() => {
+  const instruments = allGbmInstruments.value
+  return {
+    labels: instruments.map(i => i.ticker),
+    datasets: [{
+      label: 'Rendimiento $',
+      data: instruments.map(i => i.gainLoss),
+      backgroundColor: instruments.map(i => i.gainLoss >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+      borderRadius: 4
+    }]
+  }
+})
+
+async function loadGBMData() {
+  try {
+    const response = await axios.get('/api/gbm/portfolio')
+    gbmNacional.value = response.data.nacional
+    gbmUSA.value = response.data.usa
+    gbmSummary.value = response.data.summary
+  } catch (error) {
+    console.error('Error loading GBM data:', error)
+  } finally {
+    gbmLoading.value = false
+  }
+}
+
+async function loadInversiones() {
+  try {
+    const response = await axios.get('/api/inversiones')
+    const data = response.data
+
+    // Ahorro
+    data.ahorro.forEach(a => {
+      savingsAccounts.push({ ...a, selectedPeriod: '1m' })
+    })
+
+    // Préstamos
+    loans.value = data.prestamos
+    totalLoans.value = data.summary.totalLoans
+    totalLoanInterest.value = data.summary.totalLoanInterest
+    avgLoanRate.value = data.summary.avgLoanRate
+
+    // Afore
+    Object.assign(afore, data.afore)
+  } catch (error) {
+    console.error('Error loading inversiones data:', error)
+  }
+}
+
+onMounted(() => {
+  loadGBMData()
+  loadInversiones()
+})
 
 const doughnutOptions = {
   responsive: true,
@@ -653,8 +601,19 @@ const barOptions = {
 }
 
 // ===== TOTALES =====
+const dailyIncomeRevolutNu = computed(() => {
+  const revolut = savingsAccounts.find(a => a.name === 'Revolut')
+  const nu = savingsAccounts.find(a => a.name === 'Cajita Nu')
+  return (revolut ? revolut.dailyGain : 0) + (nu ? nu.dailyGain : 0)
+})
+const liquidez = computed(() => {
+  const revolut = savingsAccounts.find(a => a.name === 'Revolut')
+  const nu = savingsAccounts.find(a => a.name === 'Cajita Nu')
+  return (revolut ? revolut.balance : 0) + (nu ? nu.balance : 0)
+})
 const totalSavings = computed(() => savingsAccounts.reduce((s, a) => s + a.balance, 0))
-const totalMarket = computed(() => gbmTotal.value + afore.balance)
+const totalMarket = computed(() => gbmSummary.value.totalValueMXN + afore.balance)
+const frozenIncome = computed(() => gbmSummary.value.totalValueMXN + afore.balance + totalLoans.value)
 const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + totalMarket.value)
 
 function formatDate(dateStr) {
@@ -838,6 +797,19 @@ function formatDate(dateStr) {
 
 /* Loans */
 .loans-header-info, .gbm-header-info { margin-bottom: 20px; }
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: #8899a6;
+  font-size: 1rem;
+}
+
+.loading-state i {
+  font-size: 1.5rem;
+  margin-right: 8px;
+}
+
 .loans-header-info h2, .gbm-header-info h2 { color: #e1e8ed; font-size: 1.3rem; margin-bottom: 4px; }
 .section-desc { color: #8899a6; font-size: 0.85rem; }
 
@@ -926,6 +898,19 @@ function formatDate(dateStr) {
 }
 
 .chart-card h3 { color: #e1e8ed; margin-bottom: 12px; font-size: 0.95rem; }
+
+.performance-cash-chart {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #2d3741;
+}
+
+.performance-cash-chart h4 {
+  color: #8899a6;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
 
 .ticker-cell { display: flex; flex-direction: column; }
 .ticker-name { font-weight: 700; color: #e1e8ed; }

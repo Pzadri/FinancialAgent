@@ -33,7 +33,14 @@ body {
 .main-content {
   flex: 1;
   margin-left: 60px;
-  padding: 24px;
+  padding: 24px 40px;
   transition: margin-left 0.3s ease;
+  display: flex;
+  justify-content: center;
+}
+
+.main-content > * {
+  width: 100%;
+  max-width: 1200px;
 }
 </style>

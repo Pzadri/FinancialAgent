@@ -2,6 +2,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.telegram_bot import send_telegram_message, get_bot_info, get_updates
+from app.gbm_reader import get_full_portfolio
+from app.gi_manager import add_record, get_all_records, delete_record
+from app.creditos_reader import get_credit_cards
+from app.inversiones_reader import get_all_inversiones
+from app.deudas_manager import get_all_deudas, add_deuda, delete_deuda
 from app.config import TELEGRAM_CHAT_ID
 
 app = FastAPI(title="Financial Dashboard API", version="1.0.0")
@@ -85,5 +90,146 @@ async def telegram_updates():
     try:
         updates = await get_updates()
         return updates
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/gbm/portfolio")
+async def gbm_portfolio():
+    """Get GBM portfolio data from Excel files."""
+    try:
+        data = get_full_portfolio()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Gastos / Ingresos =====
+
+class GIRecord(BaseModel):
+    date: str
+    description: str
+    category: str
+    type: str  # "ingreso" or "gasto"
+    amount: float
+
+
+@app.get("/api/gi/records")
+async def gi_get_records():
+    """Get all gastos/ingresos records from Excel."""
+    try:
+        records = get_all_records()
+        return {"records": records}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/gi/records")
+async def gi_add_record(payload: GIRecord):
+    """Add a new gasto/ingreso record to Excel."""
+    try:
+        record = add_record(
+            fecha=payload.date,
+            descripcion=payload.description,
+            categoria=payload.category,
+            tipo=payload.type,
+            monto=payload.amount
+        )
+        return {"success": True, "record": record}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/gi/records/{record_id}")
+async def gi_delete_record(record_id: int):
+    """Delete a gasto/ingreso record by ID."""
+    try:
+        deleted = delete_record(record_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Record not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Créditos =====
+
+@app.get("/api/creditos")
+async def creditos_get():
+    """Get credit card data from Excel."""
+    try:
+        data = get_credit_cards()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Inversiones =====
+
+@app.get("/api/inversiones")
+async def inversiones_get():
+    """Get all investment data from Excel files."""
+    try:
+        data = get_all_inversiones()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Deudas =====
+
+class DeudaRecord(BaseModel):
+    name: str
+    totalDebt: float
+    paymentAmount: float
+    frequency: str  # "mensual" or "quincenal"
+    payDay1: int
+    payDay2: int = 0
+    startDate1: str = ""
+    startDate2: str = ""
+
+
+@app.get("/api/deudas")
+async def deudas_get():
+    """Get all debts."""
+    try:
+        deudas = get_all_deudas()
+        total_debt = sum(d["totalDebt"] for d in deudas)
+        return {"deudas": deudas, "totalDebt": total_debt}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/deudas")
+async def deudas_add(payload: DeudaRecord):
+    """Add a new debt."""
+    try:
+        deuda = add_deuda(
+            nombre=payload.name,
+            deuda_total=payload.totalDebt,
+            pago_periodo=payload.paymentAmount,
+            temporalidad=payload.frequency,
+            dia1=payload.payDay1,
+            dia2=payload.payDay2,
+            start_date1=payload.startDate1,
+            start_date2=payload.startDate2
+        )
+        return {"success": True, "deuda": deuda}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/deudas/{record_id}")
+async def deudas_delete(record_id: int):
+    """Delete a debt by ID."""
+    try:
+        deleted = delete_deuda(record_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Debt not found")
+        return {"success": True}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,6 +1,11 @@
 <template>
   <div class="registro">
-    <h1 class="page-title">Registro G/I</h1>
+    <div class="page-header">
+      <button class="btn-back" @click="$router.push('/gastos-ingresos')">
+        <i class="pi pi-arrow-left"></i> Regresar
+      </button>
+      <h1 class="page-title">Registro G/I</h1>
+    </div>
 
     <div class="form-card">
       <h3>Nuevo Registro</h3>
@@ -39,17 +44,8 @@
           </div>
 
           <div class="form-group">
-            <label>Tipo de Gasto</label>
-            <select v-model="form.expenseType" class="form-input" required>
-              <option value="">Seleccionar...</option>
-              <option value="fijo">Fijo (recurrente)</option>
-              <option value="unico">Único</option>
-            </select>
-          </div>
-
-          <div class="form-group">
             <label>Monto ($)</label>
-            <input type="number" v-model.number="form.amount" class="form-input" placeholder="0" min="1" required />
+            <input type="number" v-model.number="form.amount" class="form-input" placeholder="0.00" min="0.01" step="0.01" required />
           </div>
         </div>
 
@@ -79,10 +75,10 @@
           </div>
           <div class="recent-info">
             <span class="recent-desc">{{ record.description }}</span>
-            <span class="recent-meta">{{ record.category }} · {{ formatDate(record.date) }} · {{ record.expenseType === 'fijo' ? 'Fijo' : 'Único' }}</span>
+            <span class="recent-meta">{{ record.category }} · {{ formatDate(record.date) }}</span>
           </div>
           <span :class="record.amount > 0 ? 'income' : 'expense'" class="recent-amount">
-            {{ record.amount > 0 ? '+' : '-' }}${{ Math.abs(record.amount).toLocaleString() }}
+            {{ record.amount > 0 ? '+' : '-' }}${{ Math.abs(record.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
           </span>
         </div>
         <div v-if="recentRecords.length === 0" class="empty-state">
@@ -95,43 +91,45 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
-const incomeCategories = ['Salario', 'Freelance', 'Ventas', 'Inversiones', 'Otros ingresos']
-const expenseCategories = ['Vivienda', 'Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Personal', 'Educación', 'Otros gastos']
+const categories = ['Freelance', 'Delivery', 'Sueldo', 'Creditos', 'Prestamos']
 
 const form = ref({
   type: '',
   date: new Date().toISOString().split('T')[0],
   description: '',
   category: '',
-  expenseType: '',
   amount: null
 })
 
 const recentRecords = ref([])
 const successMessage = ref('')
+const errorMessage = ref('')
 
-const categoriesForType = computed(() => {
-  if (form.value.type === 'ingreso') return incomeCategories
-  if (form.value.type === 'gasto') return expenseCategories
-  return []
-})
+const categoriesForType = computed(() => categories)
 
-function submitRecord() {
-  const record = {
-    id: Date.now(),
-    date: form.value.date,
-    description: form.value.description,
-    category: form.value.category,
-    expenseType: form.value.expenseType,
-    amount: form.value.type === 'gasto' ? -Math.abs(form.value.amount) : Math.abs(form.value.amount)
+async function submitRecord() {
+  try {
+    const response = await axios.post('/api/gi/records', {
+      date: form.value.date,
+      description: form.value.description,
+      category: form.value.category,
+      type: form.value.type,
+      amount: form.value.amount
+    })
+
+    const record = response.data.record
+    recentRecords.value.unshift(record)
+    successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${Math.abs(record.amount).toLocaleString()}`
+    errorMessage.value = ''
+
+    setTimeout(() => { successMessage.value = '' }, 3000)
+    resetForm()
+  } catch (error) {
+    errorMessage.value = '❌ Error al registrar: ' + (error.response?.data?.detail || error.message)
+    setTimeout(() => { errorMessage.value = '' }, 4000)
   }
-
-  recentRecords.value.unshift(record)
-  successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${Math.abs(record.amount).toLocaleString()}`
-
-  setTimeout(() => { successMessage.value = '' }, 3000)
-  resetForm()
 }
 
 function resetForm() {
@@ -140,7 +138,6 @@ function resetForm() {
     date: new Date().toISOString().split('T')[0],
     description: '',
     category: '',
-    expenseType: '',
     amount: null
   }
 }
@@ -156,12 +153,37 @@ function formatDate(dateStr) {
   max-width: 800px;
 }
 
+.page-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 24px;
   color: #e1e8ed;
 }
+
+.btn-back {
+  position: absolute;
+  left: 0;
+  background: transparent;
+  border: 1px solid #2d3741;
+  color: #8899a6;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.btn-back:hover { color: #e1e8ed; border-color: #1da1f2; }
 
 .form-card {
   background-color: #15202b;

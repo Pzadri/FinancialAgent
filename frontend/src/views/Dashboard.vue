@@ -79,8 +79,8 @@
                 <span class="payment-date">{{ payment.date }}</span>
               </div>
               <div class="payment-right">
-                <span class="payment-amount">${{ payment.amount.toLocaleString() }}</span>
-                <span class="payment-days">{{ payment.daysLeft }} días</span>
+                <span class="payment-amount" :style="{ color: paymentColor(payment.daysLeft) }">${{ payment.amount.toLocaleString() }}</span>
+                <span class="payment-days" :style="{ color: paymentColor(payment.daysLeft) }">{{ payment.daysLeft }} días</span>
               </div>
             </div>
           </div>
@@ -98,20 +98,20 @@
               <i class="pi pi-wallet"></i>
             </div>
             <div class="inv-info">
-              <span class="inv-name">Ahorro (Revolut + Didi + Nu)</span>
-              <span class="inv-amount">${{ totalSavings.toLocaleString() }}</span>
+              <span class="inv-name">Liquidez</span>
+              <span class="inv-amount">${{ liquidez.toLocaleString() }}</span>
             </div>
-            <span class="inv-rate income">~14.3% anual</span>
+            <span class="inv-rate income">~14% anual</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b;">
               <i class="pi pi-users"></i>
             </div>
             <div class="inv-info">
-              <span class="inv-name">Préstamos (Yo Te Presto)</span>
-              <span class="inv-amount">${{ totalLoans.toLocaleString() }}</span>
+              <span class="inv-name">Didi (Ahorro compartido)</span>
+              <span class="inv-amount">${{ didiBalance.toLocaleString() }}</span>
             </div>
-            <span class="inv-rate income">~11.3% prom</span>
+            <span class="inv-rate income">15% anual</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
@@ -119,9 +119,9 @@
             </div>
             <div class="inv-info">
               <span class="inv-name">GBM (Acciones + ETFs)</span>
-              <span class="inv-amount">${{ gbmTotal.toLocaleString() }}</span>
+              <span class="inv-amount">${{ gbmTotal.toLocaleString(undefined, { maximumFractionDigits: 0 }) }}</span>
             </div>
-            <span class="inv-rate income">+9.2%</span>
+            <span class="inv-rate" :class="gbmReturnPct >= 0 ? 'income' : 'expense'">{{ gbmReturnPct >= 0 ? '+' : '' }}{{ gbmReturnPct.toFixed(1) }}%</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(29, 161, 242, 0.15); color: #1da1f2;">
@@ -141,14 +141,8 @@
 
         <div class="daily-earnings">
           <h4>Ganancias Diarias por Intereses</h4>
-          <div class="earnings-row">
-            <span>Revolut</span><span class="income">+${{ (28500 * 0.15 / 365).toFixed(2) }}</span>
-          </div>
-          <div class="earnings-row">
-            <span>Didi</span><span class="income">+${{ (42000 * 0.15 / 365).toFixed(2) }}</span>
-          </div>
-          <div class="earnings-row">
-            <span>Cajita Nu</span><span class="income">+${{ (18700 * 0.13 / 365).toFixed(2) }}</span>
+          <div class="earnings-row" v-for="acc in savingsAccounts.filter(a => a.name !== 'Didi')" :key="acc.name">
+            <span>{{ acc.name }}</span><span class="income">+${{ acc.dailyGain.toFixed(2) }}</span>
           </div>
           <div class="earnings-row total">
             <span>Total diario</span><span class="income">+${{ dailyEarnings.toFixed(2) }}</span>
@@ -196,8 +190,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Line, Doughnut } from 'vue-chartjs'
+import axios from 'axios'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -213,70 +208,205 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler)
 
-// Datos financieros
-const monthlyIncome = 530000
-const monthlyExpenses = 320000
-const savingsRate = computed(() => Math.round(((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100))
+// Reactive data from APIs
+const creditCards = ref([])
+const totalCreditDebt = ref(0)
+const totalCreditAvailable = ref(0)
+const upcomingPayments = ref([])
 
-// Créditos
-const creditCards = [
-  { name: 'Nu', color: '#820ad1', debt: 18500, limit: 45000, usage: 41 },
-  { name: 'Didi', color: '#ff6600', debt: 12800, limit: 32000, usage: 40 },
-  { name: 'Stori', color: '#00c389', debt: 9200, limit: 25000, usage: 37 }
-]
-const totalCreditDebt = computed(() => creditCards.reduce((s, c) => s + c.debt, 0))
-const totalCreditAvailable = computed(() => creditCards.reduce((s, c) => s + (c.limit - c.debt), 0))
+const totalSavings = ref(0)
+const totalLoans = ref(0)
+const gbmTotal = ref(0)
+const gbmReturnPct = ref(0)
+const afore = ref(0)
+const dailyEarnings = ref(0)
+const savingsAccounts = ref([])
 
-// Inversiones
-const totalSavings = 89200
-const totalLoans = 28000
-const gbmTotal = 92525
-const afore = 85000
-const totalPortfolio = computed(() => totalSavings + totalLoans + gbmTotal + afore)
+const recentTransactions = ref([])
+const monthlyIncome = ref(0)
+const monthlyExpenses = ref(0)
 
-// Patrimonio neto = inversiones - deudas
+const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + gbmTotal.value + afore.value)
 const patrimony = computed(() => totalPortfolio.value - totalCreditDebt.value)
+const savingsRate = computed(() => monthlyIncome.value > 0 ? Math.round(((monthlyIncome.value - monthlyExpenses.value) / monthlyIncome.value) * 100) : 0)
+const liquidez = computed(() => {
+  const revolut = savingsAccounts.value.find(a => a.name === 'Revolut')
+  const nu = savingsAccounts.value.find(a => a.name === 'Cajita Nu')
+  return (revolut ? revolut.balance : 0) + (nu ? nu.balance : 0)
+})
+const didiBalance = computed(() => {
+  const didi = savingsAccounts.value.find(a => a.name === 'Didi')
+  return didi ? didi.balance : 0
+})
 
-// Ganancias diarias
-const dailyEarnings = (28500 * 0.15 / 365) + (42000 * 0.15 / 365) + (18700 * 0.13 / 365)
+// Chart data (computed from GI records)
+const lineChartData = ref({
+  labels: [],
+  datasets: []
+})
 
-// Últimos movimientos
-const recentTransactions = [
-  { id: 1, description: 'Salario', category: 'Ingreso', date: '20 May', amount: 450000 },
-  { id: 2, description: 'Alquiler', category: 'Vivienda', date: '18 May', amount: -120000 },
-  { id: 3, description: 'Supermercado', category: 'Alimentación', date: '17 May', amount: -35000 },
-  { id: 4, description: 'Freelance', category: 'Ingreso', date: '15 May', amount: 80000 },
-  { id: 5, description: 'Netflix', category: 'Entretenimiento', date: '14 May', amount: -5000 }
-]
+const doughnutData = ref({
+  labels: [],
+  datasets: [{ data: [], backgroundColor: [] }]
+})
 
-// Próximos pagos
-const upcomingPayments = [
-  { name: 'Didi Card', color: '#ff6600', date: '12 Jun 2026', amount: 12800, daysLeft: 23 },
-  { name: 'Stori Card', color: '#00c389', date: '16 Jun 2026', amount: 9200, daysLeft: 27 },
-  { name: 'Nu Card', color: '#820ad1', date: '18 Jun 2026', amount: 18500, daysLeft: 29 }
-]
+onMounted(async () => {
+  try {
+    const [gbmRes, creditRes, invRes, giRes] = await Promise.all([
+      axios.get('/api/gbm/portfolio'),
+      axios.get('/api/creditos'),
+      axios.get('/api/inversiones'),
+      axios.get('/api/gi/records')
+    ])
 
-// Gráfica Ingresos vs Gastos
-const lineChartData = {
-  labels: ['Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May'],
-  datasets: [
-    {
-      label: 'Ingresos',
-      data: [420000, 450000, 470000, 460000, 490000, 530000],
-      borderColor: '#10b981',
-      backgroundColor: 'rgba(16, 185, 129, 0.1)',
-      fill: true,
-      tension: 0.4
-    },
-    {
-      label: 'Gastos',
-      data: [290000, 310000, 300000, 330000, 305000, 320000],
-      borderColor: '#ef4444',
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-      fill: true,
-      tension: 0.4
-    }
-  ]
+    // GBM
+    gbmTotal.value = gbmRes.data.summary.totalValueMXN
+    gbmReturnPct.value = gbmRes.data.summary.totalReturnPct
+
+    // Créditos
+    const cards = creditRes.data.cards
+    creditCards.value = cards.map(c => ({
+      name: c.name,
+      color: c.color,
+      debt: c.debt,
+      limit: c.creditLimit,
+      usage: c.usagePercent
+    }))
+    totalCreditDebt.value = creditRes.data.summary.totalDebt
+    totalCreditAvailable.value = creditRes.data.summary.totalAvailable
+
+    upcomingPayments.value = cards
+      .filter(c => c.paymentDate)
+      .sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
+      .map(c => ({
+        name: c.name,
+        color: c.color,
+        date: formatPaymentDate(c.paymentDate),
+        amount: c.fullPayment,
+        daysLeft: c.daysUntilPayment
+      }))
+
+    // Inversiones
+    const inv = invRes.data
+    totalSavings.value = inv.summary.totalSavings
+    totalLoans.value = inv.summary.totalLoans
+    afore.value = inv.afore.balance || 0
+    savingsAccounts.value = inv.ahorro
+
+    // Daily earnings from savings (Revolut + Nu)
+    const revolut = inv.ahorro.find(a => a.name === 'Revolut')
+    const nu = inv.ahorro.find(a => a.name === 'Cajita Nu')
+    dailyEarnings.value = (revolut ? revolut.dailyGain : 0) + (nu ? nu.dailyGain : 0)
+
+    // GI Records
+    const records = giRes.data.records || []
+    
+    // Recent transactions (last 5)
+    recentTransactions.value = records.slice(0, 5).map(r => ({
+      id: r.id,
+      description: r.description,
+      category: r.category,
+      date: formatShortDate(r.date),
+      amount: r.amount
+    }))
+
+    // Calculate monthly income/expenses from current month
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const thisMonthRecords = records.filter(r => r.date && r.date.startsWith(currentMonth))
+    
+    monthlyIncome.value = thisMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
+    monthlyExpenses.value = thisMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+
+    // Build line chart: last 6 months income vs expenses
+    buildLineChart(records)
+
+    // Build doughnut: expense categories this month
+    buildDoughnut(thisMonthRecords)
+
+  } catch (error) {
+    console.error('Error loading dashboard data:', error)
+  }
+})
+
+function buildLineChart(records) {
+  const months = []
+  const now = new Date()
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    months.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString('es-AR', { month: 'short' })
+    })
+  }
+
+  const incomeData = months.map(m => {
+    return records.filter(r => r.date && r.date.startsWith(m.key) && r.amount > 0).reduce((s, r) => s + r.amount, 0)
+  })
+
+  const expenseData = months.map(m => {
+    return records.filter(r => r.date && r.date.startsWith(m.key) && r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+  })
+
+  lineChartData.value = {
+    labels: months.map(m => m.label),
+    datasets: [
+      {
+        label: 'Ingresos',
+        data: incomeData,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+        tension: 0.4
+      },
+      {
+        label: 'Gastos',
+        data: expenseData,
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        fill: true,
+        tension: 0.4
+      }
+    ]
+  }
+}
+
+function buildDoughnut(monthRecords) {
+  const expenses = monthRecords.filter(r => r.amount < 0)
+  const categoryMap = {}
+  expenses.forEach(r => {
+    const cat = r.category || 'Otros'
+    categoryMap[cat] = (categoryMap[cat] || 0) + Math.abs(r.amount)
+  })
+
+  const colors = ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280', '#ec4899', '#06b6d4']
+  const entries = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
+
+  doughnutData.value = {
+    labels: entries.map(e => e[0]),
+    datasets: [{
+      data: entries.map(e => e[1]),
+      backgroundColor: entries.map((_, i) => colors[i % colors.length])
+    }]
+  }
+}
+
+function paymentColor(days) {
+  if (days <= 5) return '#ef4444'
+  if (days < 15) return '#f59e0b'
+  return '#10b981'
+}
+
+function formatPaymentDate(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr + 'T00:00:00')
+  return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function formatShortDate(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr + 'T00:00:00')
+  return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
 }
 
 const chartOptions = {
@@ -288,14 +418,6 @@ const chartOptions = {
     x: { ticks: { color: '#8899a6' }, grid: { color: '#2d3741' } },
     y: { ticks: { color: '#8899a6' }, grid: { color: '#2d3741' } }
   }
-}
-
-const doughnutData = {
-  labels: ['Vivienda', 'Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Otros'],
-  datasets: [{
-    data: [120000, 47000, 60000, 17000, 26000, 50000],
-    backgroundColor: ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280']
-  }]
 }
 
 const doughnutOptions = {
@@ -566,8 +688,8 @@ const doughnutOptions = {
 .payment-date { font-size: 0.7rem; color: #8899a6; }
 
 .payment-right { display: flex; flex-direction: column; align-items: flex-end; }
-.payment-amount { font-size: 0.9rem; font-weight: 700; color: #f59e0b; }
-.payment-days { font-size: 0.7rem; color: #8899a6; }
+.payment-amount { font-size: 0.9rem; font-weight: 700; }
+.payment-days { font-size: 0.7rem; }
 
 /* Daily Earnings */
 .daily-earnings {

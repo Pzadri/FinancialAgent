@@ -85,10 +85,7 @@
           </div>
         </div>
 
-        <div class="card-countdown">
-          <i class="pi pi-clock"></i>
-          <span>{{ daysUntilPayment(card.paymentDate) }} días para el pago</span>
-        </div>
+        <PaymentCountdown :days="daysUntilPayment(card.paymentDate)" />
       </div>
     </div>
 
@@ -156,8 +153,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Doughnut, Bar } from 'vue-chartjs'
+import axios from 'axios'
+import PaymentCountdown from '../components/PaymentCountdown.vue'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -171,61 +170,36 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
-// Datos simulados de las 3 tarjetas
-const cards = [
-  {
-    name: 'Nu',
-    color: '#820ad1',
-    creditLimit: 45000,
-    debt: 18500,
-    available: 26500,
-    usagePercent: 41,
-    cutoffDate: '2026-06-03',
-    paymentDate: '2026-06-18',
-    minimumPayment: 1850,
-    fullPayment: 18500
-  },
-  {
-    name: 'Didi',
-    color: '#ff6600',
-    creditLimit: 32000,
-    debt: 12800,
-    available: 19200,
-    usagePercent: 40,
-    cutoffDate: '2026-05-28',
-    paymentDate: '2026-06-12',
-    minimumPayment: 1280,
-    fullPayment: 12800
-  },
-  {
-    name: 'Stori',
-    color: '#00c389',
-    creditLimit: 25000,
-    debt: 9200,
-    available: 15800,
-    usagePercent: 37,
-    cutoffDate: '2026-06-01',
-    paymentDate: '2026-06-16',
-    minimumPayment: 920,
-    fullPayment: 9200
-  }
-]
+const cards = ref([])
+const totalCredit = ref(0)
+const totalDebt = ref(0)
+const totalAvailable = ref(0)
+const totalPayment = ref(0)
+const usagePercent = ref(0)
 
-const totalCredit = computed(() => cards.reduce((sum, c) => sum + c.creditLimit, 0))
-const totalDebt = computed(() => cards.reduce((sum, c) => sum + c.debt, 0))
-const totalAvailable = computed(() => cards.reduce((sum, c) => sum + c.available, 0))
-const totalPayment = computed(() => cards.reduce((sum, c) => sum + c.fullPayment, 0))
-const usagePercent = computed(() => Math.round((totalDebt.value / totalCredit.value) * 100))
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/creditos')
+    cards.value = response.data.cards
+    totalCredit.value = response.data.summary.totalCredit
+    totalDebt.value = response.data.summary.totalDebt
+    totalAvailable.value = response.data.summary.totalAvailable
+    totalPayment.value = response.data.summary.totalPayment
+    usagePercent.value = response.data.summary.usagePercent
+  } catch (error) {
+    console.error('Error loading credit data:', error)
+  }
+})
 
 // Gráfica de distribución de deuda
-const debtDistributionData = {
-  labels: cards.map(c => c.name),
+const debtDistributionData = computed(() => ({
+  labels: cards.value.map(c => c.name),
   datasets: [{
-    data: cards.map(c => c.debt),
-    backgroundColor: cards.map(c => c.color),
+    data: cards.value.map(c => c.debt),
+    backgroundColor: cards.value.map(c => c.color),
     borderWidth: 0
   }]
-}
+}))
 
 const doughnutOptions = {
   responsive: true,
@@ -238,29 +212,29 @@ const doughnutOptions = {
 }
 
 // Gráfica de barras crédito vs deuda
-const creditVsDebtData = {
-  labels: cards.map(c => c.name),
+const creditVsDebtData = computed(() => ({
+  labels: cards.value.map(c => c.name),
   datasets: [
     {
       label: 'Crédito Total',
-      data: cards.map(c => c.creditLimit),
+      data: cards.value.map(c => c.creditLimit),
       backgroundColor: 'rgba(29, 161, 242, 0.6)',
       borderRadius: 4
     },
     {
       label: 'Deuda',
-      data: cards.map(c => c.debt),
+      data: cards.value.map(c => c.debt),
       backgroundColor: 'rgba(239, 68, 68, 0.6)',
       borderRadius: 4
     },
     {
       label: 'Disponible',
-      data: cards.map(c => c.available),
+      data: cards.value.map(c => c.available),
       backgroundColor: 'rgba(16, 185, 129, 0.6)',
       borderRadius: 4
     }
   ]
-}
+}))
 
 const barOptions = {
   responsive: true,
@@ -282,11 +256,13 @@ const barOptions = {
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return ''
   const date = new Date(dateStr + 'T00:00:00')
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 function daysUntilPayment(dateStr) {
+  if (!dateStr) return 0
   const today = new Date()
   const payment = new Date(dateStr + 'T00:00:00')
   const diff = Math.ceil((payment - today) / (1000 * 60 * 60 * 24))
@@ -508,20 +484,7 @@ function getUsageClass(percent) {
   color: #f59e0b;
 }
 
-.card-countdown {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background-color: #192734;
-  border-radius: 8px;
-  color: #8899a6;
-  font-size: 0.8rem;
-}
-
-.card-countdown i {
-  color: #f59e0b;
-}
+/* countdown handled by PaymentCountdown component */
 
 /* Tabla */
 .table-card {

@@ -4,6 +4,8 @@ import Inversiones from '../views/Inversiones.vue'
 import Creditos from '../views/Creditos.vue'
 import GastosIngresos from '../views/GastosIngresos.vue'
 import RegistroGI from '../views/RegistroGI.vue'
+import Deudas from '../views/Deudas.vue'
+import NuevaDeuda from '../views/NuevaDeuda.vue'
 import Alerts from '../views/Alerts.vue'
 import Settings from '../views/Settings.vue'
 
@@ -13,6 +15,8 @@ const routes = [
   { path: '/creditos', name: 'Creditos', component: Creditos, meta: { icon: 'pi pi-credit-card', label: 'Créditos' } },
   { path: '/gastos-ingresos', name: 'GastosIngresos', component: GastosIngresos, meta: { icon: 'pi pi-list', label: 'Gastos / Ingresos' } },
   { path: '/gastos-ingresos/registro', name: 'RegistroGI', component: RegistroGI },
+  { path: '/deudas', name: 'Deudas', component: Deudas, meta: { icon: 'pi pi-money-bill', label: 'Deudas' } },
+  { path: '/deudas/nuevo', name: 'NuevaDeuda', component: NuevaDeuda },
   { path: '/alerts', name: 'Alerts', component: Alerts, meta: { icon: 'pi pi-bell', label: 'Alertas' } },
   { path: '/settings', name: 'Settings', component: Settings, meta: { icon: 'pi pi-cog', label: 'Configuración' } }
 ]

@@ -10,12 +10,11 @@
     <!-- Filtros -->
     <div class="filters-bar">
       <div class="filter-group">
-        <label>Desde</label>
-        <input type="date" v-model="filters.dateFrom" class="filter-input" />
-      </div>
-      <div class="filter-group">
-        <label>Hasta</label>
-        <input type="date" v-model="filters.dateTo" class="filter-input" />
+        <label>Mes</label>
+        <select v-model="filters.month" class="filter-input">
+          <option value="">Todos</option>
+          <option v-for="m in monthOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
+        </select>
       </div>
       <div class="filter-group">
         <label>Categoría</label>
@@ -30,14 +29,6 @@
           <option value="">Todos</option>
           <option value="ingreso">Ingreso</option>
           <option value="gasto">Gasto</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Tipo de Gasto</label>
-        <select v-model="filters.expenseType" class="filter-input">
-          <option value="">Todos</option>
-          <option value="fijo">Fijo</option>
-          <option value="unico">Único</option>
         </select>
       </div>
       <button class="btn-clear" @click="clearFilters">
@@ -62,10 +53,6 @@
               Categoría
               <i :class="getSortIcon('category')"></i>
             </th>
-            <th @click="sortBy('expenseType')" class="sortable">
-              Tipo de Gasto
-              <i :class="getSortIcon('expenseType')"></i>
-            </th>
             <th @click="sortBy('amount')" class="sortable">
               Monto
               <i :class="getSortIcon('amount')"></i>
@@ -77,17 +64,12 @@
             <td>{{ formatDate(item.date) }}</td>
             <td>{{ item.description }}</td>
             <td><span class="category-badge">{{ item.category }}</span></td>
-            <td>
-              <span class="type-badge" :class="item.expenseType">
-                {{ item.expenseType === 'fijo' ? 'Fijo' : 'Único' }}
-              </span>
-            </td>
             <td :class="item.amount > 0 ? 'income' : 'expense'">
-              {{ item.amount > 0 ? '+' : '' }}${{ Math.abs(item.amount).toLocaleString() }}
+              {{ item.amount > 0 ? '+' : '' }}${{ Math.abs(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
             </td>
           </tr>
           <tr v-if="filteredAndSorted.length === 0">
-            <td colspan="5" class="empty-row">No hay registros que coincidan con los filtros</td>
+            <td colspan="4" class="empty-row">No hay registros que coincidan con los filtros</td>
           </tr>
         </tbody>
       </table>
@@ -97,16 +79,16 @@
     <div class="summary-bar">
       <div class="summary-item">
         <span class="summary-label">Total Ingresos:</span>
-        <span class="income">+${{ totalIncome.toLocaleString() }}</span>
+        <span class="income">+${{ totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Total Gastos:</span>
-        <span class="expense">-${{ totalExpenses.toLocaleString() }}</span>
+        <span class="expense">-${{ totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Balance:</span>
         <span :class="balance >= 0 ? 'income' : 'expense'">
-          {{ balance >= 0 ? '+' : '' }}${{ Math.abs(balance).toLocaleString() }}
+          {{ balance >= 0 ? '+' : '' }}${{ Math.abs(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
         </span>
       </div>
       <div class="summary-item">
@@ -118,37 +100,49 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
-const transactions = ref([
-  { id: 1, date: '2026-05-20', description: 'Salario', category: 'Salario', expenseType: 'fijo', amount: 450000 },
-  { id: 2, date: '2026-05-18', description: 'Alquiler', category: 'Vivienda', expenseType: 'fijo', amount: -120000 },
-  { id: 3, date: '2026-05-17', description: 'Supermercado', category: 'Alimentación', expenseType: 'unico', amount: -35000 },
-  { id: 4, date: '2026-05-15', description: 'Freelance proyecto web', category: 'Freelance', expenseType: 'unico', amount: 80000 },
-  { id: 5, date: '2026-05-14', description: 'Netflix', category: 'Entretenimiento', expenseType: 'fijo', amount: -5000 },
-  { id: 6, date: '2026-05-12', description: 'Combustible', category: 'Transporte', expenseType: 'unico', amount: -25000 },
-  { id: 7, date: '2026-05-10', description: 'Electricidad', category: 'Servicios', expenseType: 'fijo', amount: -18000 },
-  { id: 8, date: '2026-05-08', description: 'Restaurante', category: 'Alimentación', expenseType: 'unico', amount: -12000 },
-  { id: 9, date: '2026-05-05', description: 'Internet', category: 'Servicios', expenseType: 'fijo', amount: -8000 },
-  { id: 10, date: '2026-05-03', description: 'Gimnasio', category: 'Salud', expenseType: 'fijo', amount: -15000 },
-  { id: 11, date: '2026-05-01', description: 'Venta Mercadolibre', category: 'Ventas', expenseType: 'unico', amount: 25000 },
-  { id: 12, date: '2026-04-28', description: 'Seguro auto', category: 'Transporte', expenseType: 'fijo', amount: -35000 },
-  { id: 13, date: '2026-04-25', description: 'Ropa', category: 'Personal', expenseType: 'unico', amount: -22000 },
-  { id: 14, date: '2026-04-20', description: 'Salario', category: 'Salario', expenseType: 'fijo', amount: 450000 },
-  { id: 15, date: '2026-04-18', description: 'Alquiler', category: 'Vivienda', expenseType: 'fijo', amount: -120000 }
-])
+const transactions = ref([])
+const loading = ref(true)
+
+async function loadRecords() {
+  try {
+    const response = await axios.get('/api/gi/records')
+    transactions.value = response.data.records
+  } catch (error) {
+    console.error('Error loading records:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadRecords()
+})
 
 const filters = ref({
-  dateFrom: '',
-  dateTo: '',
+  month: '',
   category: '',
-  type: '',
-  expenseType: ''
+  type: ''
 })
 
 const sort = ref({
   field: 'date',
   order: 'desc'
+})
+
+// Generate last 6 months options
+const monthOptions = computed(() => {
+  const options = []
+  const now = new Date()
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+    options.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) })
+  }
+  return options
 })
 
 const categories = computed(() => {
@@ -159,14 +153,9 @@ const categories = computed(() => {
 const filteredAndSorted = computed(() => {
   let result = [...transactions.value]
 
-  // Filtro por fecha desde
-  if (filters.value.dateFrom) {
-    result = result.filter(t => t.date >= filters.value.dateFrom)
-  }
-
-  // Filtro por fecha hasta
-  if (filters.value.dateTo) {
-    result = result.filter(t => t.date <= filters.value.dateTo)
+  // Filtro por mes
+  if (filters.value.month) {
+    result = result.filter(t => t.date && t.date.startsWith(filters.value.month))
   }
 
   // Filtro por categoría
@@ -181,11 +170,6 @@ const filteredAndSorted = computed(() => {
     } else {
       result = result.filter(t => t.amount < 0)
     }
-  }
-
-  // Filtro por tipo de gasto (fijo/unico)
-  if (filters.value.expenseType) {
-    result = result.filter(t => t.expenseType === filters.value.expenseType)
   }
 
   // Ordenamiento
@@ -242,7 +226,7 @@ function formatDate(dateStr) {
 }
 
 function clearFilters() {
-  filters.value = { dateFrom: '', dateTo: '', category: '', type: '', expenseType: '' }
+  filters.value = { month: '', category: '', type: '' }
 }
 </script>
 
@@ -389,6 +373,16 @@ function clearFilters() {
   border-bottom: 1px solid #2d3741;
   color: #e1e8ed;
   font-size: 0.9rem;
+}
+
+.data-table td.income {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.data-table td.expense {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .data-table tr:last-child td {
