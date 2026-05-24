@@ -1,0 +1,168 @@
+INFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [2912] using StatReload
+INFO:     Started server process [13632]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56743 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56742 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56744 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56749 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56750 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56748 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56755 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56756 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56754 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56760 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56761 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56762 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56770 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56771 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56772 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56100 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56101 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53643 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51341 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51342 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51343 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61819 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59008 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59009 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59010 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50855 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49196 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64940 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53106 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58445 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58444 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58446 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60859 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60861 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60860 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60869 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60868 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60870 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60875 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60874 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60876 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60881 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60880 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60882 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60888 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60887 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60886 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60892 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60894 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60893 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57401 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57402 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57408 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57407 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57409 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64860 - "POST /api/shutdown HTTP/1.1" 200 OK
+INFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17932] using StatReload
+INFO:     Started server process [9640]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [7304] using StatReload
+INFO:     Started server process [16936]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:64826 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64828 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64830 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64832 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64834 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62579 - "POST /api/shutdown HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [1044] using StatReload
+INFO:     Started server process [14736]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:49331 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50242 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50243 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50245 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50247 - "GET /api/gi/records HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17224] using StatReload
+INFO:     Started server process [17800]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56198 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53176 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53177 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53181 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53179 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58562 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58564 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56149 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54019 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59811 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59813 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52002 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61720 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62408 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56580 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59441 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56578 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56208 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61472 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60718 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52796 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52797 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51279 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62349 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62351 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56755 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56757 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58907 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52077 - "GET /api/gi/records HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17544] using StatReload
+INFO:     Started server process [2436]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53288 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61903 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61909 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61905 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61907 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61901 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17160] using StatReload
+INFO:     Started server process [17528]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57999 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56046 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63658 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63660 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63656 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:62376 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52780 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63956 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64324 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64038 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60509 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65153 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61704 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50510 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61707 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63921 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63531 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60262 - "GET /api/gi/records HTTP/1.1" 200 OK
+^C

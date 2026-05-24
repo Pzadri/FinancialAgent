@@ -8,28 +8,28 @@
         <div class="stat-icon portfolio"><i class="pi pi-briefcase"></i></div>
         <div class="stat-info">
           <span class="stat-label">Portafolio Total</span>
-          <span class="stat-value">${{ totalPortfolio.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(totalPortfolio) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon savings"><i class="pi pi-wallet"></i></div>
         <div class="stat-info">
           <span class="stat-label">Liquidez</span>
-          <span class="stat-value">${{ liquidez.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(liquidez) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon savings"><i class="pi pi-wallet"></i></div>
         <div class="stat-info">
           <span class="stat-label">Ingreso Diario</span>
-          <span class="stat-value">+${{ dailyIncomeRevolutNu.toFixed(2) }}</span>
+          <span class="stat-value">+${{ formatMoney(dailyIncomeRevolutNu) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon market"><i class="pi pi-chart-line"></i></div>
         <div class="stat-info">
           <span class="stat-label">Ingreso Congelado</span>
-          <span class="stat-value">${{ frozenIncome.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(frozenIncome) }}</span>
         </div>
       </div>
     </div>
@@ -50,6 +50,35 @@
 
     <!-- SECCIÓN: CUENTAS DE AHORRO -->
     <div v-if="activeTab === 'savings'" class="section-content">
+
+      <!-- Banner de actualización (solo lunes sin actualizar) -->
+      <div v-if="updateStatus.needsUpdate" class="update-banner">
+        <div class="update-banner-info">
+          <i class="pi pi-refresh"></i>
+          <div>
+            <span class="update-banner-title">Datos pendientes de actualizar</span>
+            <span class="update-banner-sub">
+              Es lunes — recuerda actualizar el Excel de ahorro y hacer click en "Actualizar".
+              <span v-if="updateStatus.lastUpdate">
+                Última actualización: {{ updateStatus.lastUpdate }}
+                (hace {{ updateStatus.daysSinceUpdate }} días)
+              </span>
+              <span v-else>Nunca actualizado.</span>
+            </span>
+          </div>
+        </div>
+        <button class="btn-update" :disabled="updating" @click="markUpdated">
+          <i :class="updating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+          {{ updating ? 'Guardando...' : 'Marcar como actualizado' }}
+        </button>
+      </div>
+
+      <!-- Indicador de última actualización (cuando ya está al día) -->
+      <div v-else-if="updateStatus.lastUpdate" class="update-ok">
+        <i class="pi pi-check-circle"></i>
+        <span>Datos actualizados el {{ updateStatus.lastUpdate }}</span>
+      </div>
+
       <div class="savings-cards">
         <div v-for="account in savingsAccounts" :key="account.name" class="savings-card" :style="{ borderTopColor: account.color }">
           <div class="savings-header">
@@ -64,14 +93,14 @@
 
           <div class="savings-balance">
             <span class="balance-label">Saldo Actual</span>
-            <span class="balance-value">${{ account.balance.toLocaleString() }}</span>
+            <span class="balance-value">${{ formatMoney(account.balance) }}</span>
           </div>
 
           <div class="savings-rate">
             <span class="rate-badge" :style="{ backgroundColor: account.color + '20', color: account.color }">
               {{ account.annualRate }}% anual
             </span>
-            <span class="daily-gain">+${{ account.dailyGain.toFixed(2) }}/día</span>
+            <span class="daily-gain">+${{ formatMoney(account.dailyGain) }}/día</span>
           </div>
 
           <!-- Selector de periodo -->
@@ -95,11 +124,11 @@
           <div class="projection-summary">
             <div class="proj-item">
               <span class="proj-label">Proyección</span>
-              <span class="proj-value income">${{ getProjection(account).toLocaleString(undefined, { maximumFractionDigits: 0 }) }}</span>
+              <span class="proj-value income">${{ formatMoney(getProjection(account)) }}</span>
             </div>
             <div class="proj-item">
               <span class="proj-label">Ganancia</span>
-              <span class="proj-value income">+${{ (getProjection(account) - account.balance).toLocaleString(undefined, { maximumFractionDigits: 0 }) }}</span>
+              <span class="proj-value income">+${{ formatMoney(getProjection(account) - account.balance) }}</span>
             </div>
           </div>
         </div>
@@ -116,11 +145,11 @@
       <div class="loans-summary">
         <div class="loan-stat">
           <span class="loan-stat-label">Capital Prestado</span>
-          <span class="loan-stat-value">${{ totalLoans.toLocaleString() }}</span>
+          <span class="loan-stat-value">${{ formatMoney(totalLoans) }}</span>
         </div>
         <div class="loan-stat">
           <span class="loan-stat-label">Intereses Esperados</span>
-          <span class="loan-stat-value income">+${{ totalLoanInterest.toLocaleString() }}</span>
+          <span class="loan-stat-value income">+${{ formatMoney(totalLoanInterest) }}</span>
         </div>
         <div class="loan-stat">
           <span class="loan-stat-label">Retorno Promedio</span>
@@ -138,18 +167,16 @@
               <th>Interés Esperado</th>
               <th>Retorno Total</th>
               <th>Estado</th>
-              <th>Vencimiento</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="loan in loans" :key="loan.id">
-              <td>${{ loan.principal.toLocaleString() }}</td>
+              <td>${{ formatMoney(loan.principal) }}</td>
               <td><span class="rate-badge-sm">{{ loan.rate }}%</span></td>
               <td>{{ loan.term }}</td>
-              <td class="income">+${{ loan.expectedInterest.toLocaleString() }}</td>
-              <td>${{ loan.totalReturn.toLocaleString() }}</td>
+              <td class="income">+${{ formatMoney(loan.expectedInterest) }}</td>
+              <td>${{ formatMoney(loan.totalReturn) }}</td>
               <td><span class="status-badge" :class="loan.status">{{ loan.statusLabel }}</span></td>
-              <td>{{ formatDate(loan.dueDate) }}</td>
             </tr>
           </tbody>
         </table>
@@ -170,7 +197,7 @@
         <div class="afore-stats">
           <div class="afore-stat">
             <span class="afore-stat-label">Saldo Acumulado</span>
-            <span class="afore-stat-value">${{ afore.balance.toLocaleString() }}</span>
+            <span class="afore-stat-value">${{ formatMoney(afore.balance) }}</span>
           </div>
           <div class="afore-stat">
             <span class="afore-stat-label">Rendimiento Anual</span>
@@ -178,11 +205,11 @@
           </div>
           <div class="afore-stat">
             <span class="afore-stat-label">Aportación Bimestral</span>
-            <span class="afore-stat-value">${{ afore.bimonthlyContribution.toLocaleString() }}</span>
+            <span class="afore-stat-value">${{ formatMoney(afore.bimonthlyContribution) }}</span>
           </div>
           <div class="afore-stat">
             <span class="afore-stat-label">Aportación Voluntaria</span>
-            <span class="afore-stat-value">${{ afore.voluntaryContribution.toLocaleString() }}/semana</span>
+            <span class="afore-stat-value">${{ formatMoney(afore.voluntaryContribution) }}/semana</span>
           </div>
         </div>
 
@@ -191,7 +218,7 @@
         </div>
 
         <div class="afore-projection">
-          <p>Proyección a 30 años con aportaciones actuales: <strong class="income">${{ aforeProjection30.toLocaleString(undefined, { maximumFractionDigits: 0 }) }}</strong></p>
+          <p>Proyección a 30 años con aportaciones actuales: <strong class="income">${{ formatNumber(aforeProjection30) }}</strong></p>
         </div>
       </div>
     </div>
@@ -203,6 +230,83 @@
         <p class="section-desc">Portafolio de inversiones nacionales e internacionales (datos desde Excel)</p>
       </div>
 
+      <!-- Banner de actualización GBM (solo lunes sin actualizar) -->
+      <div v-if="gbmUpdateStatus.needsUpdate" class="update-banner">
+        <div class="update-banner-info">
+          <i class="pi pi-refresh"></i>
+          <div>
+            <span class="update-banner-title">Portafolio GBM pendiente de actualizar</span>
+            <span class="update-banner-sub">
+              Es lunes — sube los archivos Excel descargados de la app GBM.
+              <span v-if="gbmUpdateStatus.lastUpdate">
+                Última actualización: {{ gbmUpdateStatus.lastUpdate }}
+                (hace {{ gbmUpdateStatus.daysSinceUpdate }} días)
+              </span>
+              <span v-else>Nunca actualizado.</span>
+            </span>
+          </div>
+        </div>
+        <button class="btn-update" @click="showGbmUpload = true">
+          <i class="pi pi-upload"></i> Subir archivos
+        </button>
+      </div>
+
+      <!-- Indicador de última actualización GBM -->
+      <div v-else-if="gbmUpdateStatus.lastUpdate" class="update-ok">
+        <i class="pi pi-check-circle"></i>
+        <span>Portafolio actualizado el {{ gbmUpdateStatus.lastUpdate }}</span>
+      </div>
+
+      <!-- Modal de upload -->
+      <div v-if="showGbmUpload" class="upload-overlay" @click.self="showGbmUpload = false">
+        <div class="upload-modal">
+          <div class="upload-modal-header">
+            <h3><i class="pi pi-upload"></i> Actualizar Portafolio GBM</h3>
+            <button class="btn-close" @click="showGbmUpload = false"><i class="pi pi-times"></i></button>
+          </div>
+
+          <div class="upload-modal-body">
+            <p class="upload-hint">Descarga los archivos desde la app GBM y súbelos aquí. El sistema los identificará automáticamente por su nombre.</p>
+
+            <!-- Drop zone Nacional -->
+            <div class="upload-field">
+              <label>Portafolio Nacional (MXN)</label>
+              <div class="drop-zone" :class="{ 'has-file': files.nacional }" @click="$refs.inputNacional.click()">
+                <input ref="inputNacional" type="file" accept=".xlsx" style="display:none" @change="onFileChange('nacional', $event)" />
+                <i :class="files.nacional ? 'pi pi-file-excel' : 'pi pi-cloud-upload'"></i>
+                <span>{{ files.nacional ? files.nacional.name : 'Click para seleccionar o arrastra el archivo' }}</span>
+              </div>
+            </div>
+
+            <!-- Drop zone USA -->
+            <div class="upload-field">
+              <label>Portafolio USA (USD)</label>
+              <div class="drop-zone" :class="{ 'has-file': files.usa }" @click="$refs.inputUsa.click()">
+                <input ref="inputUsa" type="file" accept=".xlsx" style="display:none" @change="onFileChange('usa', $event)" />
+                <i :class="files.usa ? 'pi pi-file-excel' : 'pi pi-cloud-upload'"></i>
+                <span>{{ files.usa ? files.usa.name : 'Click para seleccionar o arrastra el archivo' }}</span>
+              </div>
+            </div>
+
+            <div v-if="uploadError" class="upload-error">
+              <i class="pi pi-exclamation-triangle"></i> {{ uploadError }}
+            </div>
+          </div>
+
+          <div class="upload-modal-footer">
+            <button class="btn-cancel" @click="showGbmUpload = false">Cancelar</button>
+            <button
+              class="btn-upload-confirm"
+              :disabled="!files.nacional || !files.usa || uploading"
+              @click="uploadGbm"
+            >
+              <i :class="uploading ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+              {{ uploading ? 'Subiendo...' : 'Actualizar portafolio' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="gbmLoading" class="loading-state">
         <i class="pi pi-spin pi-spinner"></i> Cargando portafolio...
       </div>
@@ -211,25 +315,25 @@
         <div class="gbm-summary">
           <div class="gbm-stat">
             <span class="gbm-stat-label">Valor Total (MXN)</span>
-            <span class="gbm-stat-value">${{ gbmSummary.totalValueMXN.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
+            <span class="gbm-stat-value">${{ formatMoney(gbmSummary.totalValueMXN) }}</span>
           </div>
           <div class="gbm-stat">
             <span class="gbm-stat-label">Nacional (MXN)</span>
-            <span class="gbm-stat-value">${{ gbmSummary.nacionalValueMXN.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
+            <span class="gbm-stat-value">${{ formatMoney(gbmSummary.nacionalValueMXN) }}</span>
           </div>
           <div class="gbm-stat">
             <span class="gbm-stat-label">USA (USD)</span>
-            <span class="gbm-stat-value">${{ gbmSummary.usaValueUSD.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}</span>
+            <span class="gbm-stat-value">${{ formatMoney(gbmSummary.usaValueUSD) }}</span>
           </div>
           <div class="gbm-stat">
             <span class="gbm-stat-label">Rendimiento Total</span>
             <span class="gbm-stat-value" :class="gbmSummary.totalReturnPct >= 0 ? 'income' : 'expense'">
-              {{ gbmSummary.totalReturnPct >= 0 ? '+' : '' }}{{ gbmSummary.totalReturnPct.toFixed(2) }}%
+              {{ gbmSummary.totalReturnPct >= 0 ? '+' : '' }}{{ formatPct(gbmSummary.totalReturnPct) }}%
             </span>
           </div>
           <div class="gbm-stat">
             <span class="gbm-stat-label">TC USD/MXN</span>
-            <span class="gbm-stat-value">${{ gbmSummary.usdMxnRate }}</span>
+            <span class="gbm-stat-value">{{ gbmSummary.usdMxnRate ? '$' + formatMoney(gbmSummary.usdMxnRate) : '...' }}</span>
           </div>
         </div>
 
@@ -268,14 +372,14 @@
               <tr v-for="inv in gbmNacional" :key="inv.ticker">
                 <td><span class="ticker-name">{{ inv.ticker }}</span></td>
                 <td>{{ inv.shares }}</td>
-                <td>${{ inv.avgCost.toFixed(2) }}</td>
-                <td>${{ inv.marketPrice.toFixed(2) }}</td>
-                <td>${{ inv.marketValue.toFixed(2) }}</td>
+                <td>${{ formatMoney(inv.avgCost) }}</td>
+                <td>${{ formatMoney(inv.marketPrice) }}</td>
+                <td>${{ formatMoney(inv.marketValue) }}</td>
                 <td :class="inv.gainLoss >= 0 ? 'income' : 'expense'">
-                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ inv.gainLoss.toFixed(2) }}
+                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ formatMoney(inv.gainLoss) }}
                 </td>
                 <td :class="inv.returnPct >= 0 ? 'income' : 'expense'">
-                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ inv.returnPct.toFixed(2) }}%
+                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ formatPct(inv.returnPct) }}%
                 </td>
               </tr>
             </tbody>
@@ -300,15 +404,15 @@
             <tbody>
               <tr v-for="inv in gbmUSA" :key="inv.ticker">
                 <td><span class="ticker-name">{{ inv.ticker }}</span></td>
-                <td>{{ inv.shares.toFixed(8) }}</td>
-                <td>${{ inv.avgCost.toFixed(2) }}</td>
-                <td>${{ inv.marketPrice.toFixed(2) }}</td>
-                <td>${{ inv.marketValue.toFixed(2) }}</td>
+                <td>{{ formatPct(inv.shares, 8) }}</td>
+                <td>${{ formatMoney(inv.avgCost) }}</td>
+                <td>${{ formatMoney(inv.marketPrice) }}</td>
+                <td>${{ formatMoney(inv.marketValue) }}</td>
                 <td :class="inv.gainLoss >= 0 ? 'income' : 'expense'">
-                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ inv.gainLoss.toFixed(2) }}
+                  {{ inv.gainLoss >= 0 ? '+' : '' }}${{ formatMoney(inv.gainLoss) }}
                 </td>
                 <td :class="inv.returnPct >= 0 ? 'income' : 'expense'">
-                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ inv.returnPct.toFixed(2) }}%
+                  {{ inv.returnPct >= 0 ? '+' : '' }}{{ formatPct(inv.returnPct) }}%
                 </td>
               </tr>
             </tbody>
@@ -338,6 +442,8 @@ import {
 } from 'chart.js'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler)
+
+import { formatMoney, formatNumber, formatPct } from '../utils/format.js'
 
 const activeTab = ref('savings')
 
@@ -496,7 +602,7 @@ const gbmSummary = ref({
   totalValueMXN: 0,
   totalGainMXN: 0,
   totalReturnPct: 0,
-  usdMxnRate: 19.45
+  usdMxnRate: 0
 })
 
 const gbmColors = ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#e11d48', '#a855f7']
@@ -577,9 +683,77 @@ async function loadInversiones() {
   }
 }
 
+// ===== ESTADO DE ACTUALIZACIÓN =====
+const updateStatus = ref({ needsUpdate: false, lastUpdate: null, isMonday: false, daysSinceUpdate: null })
+const updating = ref(false)
+
+async function loadUpdateStatus() {
+  try {
+    const res = await axios.get('/api/inversiones/update-status')
+    updateStatus.value = res.data
+  } catch { /* silencioso */ }
+}
+
+async function markUpdated() {
+  updating.value = true
+  try {
+    await axios.post('/api/inversiones/mark-updated')
+    await loadUpdateStatus()
+  } catch { /* silencioso */ } finally {
+    updating.value = false
+  }
+}
+
+// ===== ESTADO DE ACTUALIZACIÓN GBM =====
+const gbmUpdateStatus = ref({ needsUpdate: false, lastUpdate: null, isMonday: false, daysSinceUpdate: null })
+const showGbmUpload = ref(false)
+const uploading = ref(false)
+const uploadError = ref('')
+const files = ref({ nacional: null, usa: null })
+
+async function loadGbmUpdateStatus() {
+  try {
+    const res = await axios.get('/api/gbm/update-status')
+    gbmUpdateStatus.value = res.data
+  } catch { /* silencioso */ }
+}
+
+function onFileChange(type, event) {
+  const file = event.target.files[0]
+  if (file) files.value[type] = file
+}
+
+async function uploadGbm() {
+  uploading.value = true
+  uploadError.value = ''
+  try {
+    const form = new FormData()
+    form.append('nacional', files.value.nacional)
+    form.append('usa', files.value.usa)
+
+    await axios.post('/api/gbm/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    // Recargar datos del portafolio con los nuevos archivos
+    gbmLoading.value = true
+    await loadGBMData()
+    await loadGbmUpdateStatus()
+
+    showGbmUpload.value = false
+    files.value = { nacional: null, usa: null }
+  } catch (e) {
+    uploadError.value = e.response?.data?.detail || 'Error al subir los archivos.'
+  } finally {
+    uploading.value = false
+  }
+}
+
 onMounted(() => {
   loadGBMData()
   loadInversiones()
+  loadUpdateStatus()
+  loadGbmUpdateStatus()
 })
 
 const doughnutOptions = {
@@ -1034,4 +1208,227 @@ function formatDate(dateStr) {
   .loans-summary, .gbm-summary { flex-direction: column; }
   .section-tabs { flex-wrap: wrap; }
 }
+
+/* ── Banner de actualización ─────────────────────────────────────────── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background-color: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+}
+
+.update-banner-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+.update-banner-info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.update-banner-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.update-banner-sub {
+  font-size: 0.78rem;
+  color: #8899a6;
+}
+
+.btn-update {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background-color: #f59e0b;
+  color: #0d1117;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-update:hover:not(:disabled) { background-color: #d97706; }
+.btn-update:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.update-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  color: #10b981;
+  font-size: 0.82rem;
+}
+
+/* ── Modal de upload GBM ─────────────────────────────────────────────── */
+.upload-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.upload-modal {
+  background-color: #15202b;
+  border: 1px solid #2d3741;
+  border-radius: 14px;
+  width: 480px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+.upload-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #2d3741;
+}
+
+.upload-modal-header h3 {
+  color: #e1e8ed;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: #8899a6;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+.btn-close:hover { color: #e1e8ed; }
+
+.upload-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upload-hint {
+  font-size: 0.82rem;
+  color: #8899a6;
+  margin: 0;
+}
+
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upload-field label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #8899a6;
+  font-weight: 600;
+}
+
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px dashed #2d3741;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #8899a6;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.drop-zone:hover { border-color: #1da1f2; color: #e1e8ed; }
+
+.drop-zone.has-file {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.06);
+  color: #10b981;
+}
+
+.drop-zone i { font-size: 1.6rem; }
+
+.upload-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.82rem;
+}
+
+.upload-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #2d3741;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #2d3741;
+  color: #8899a6;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel:hover { color: #e1e8ed; border-color: #8899a6; }
+
+.btn-upload-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-upload-confirm:hover:not(:disabled) { background-color: #1a91da; }
+.btn-upload-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

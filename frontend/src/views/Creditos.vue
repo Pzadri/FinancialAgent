@@ -8,21 +8,21 @@
         <div class="stat-icon credit"><i class="pi pi-credit-card"></i></div>
         <div class="stat-info">
           <span class="stat-label">Crédito Total</span>
-          <span class="stat-value">${{ totalCredit.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(totalCredit) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon debt"><i class="pi pi-exclamation-triangle"></i></div>
         <div class="stat-info">
           <span class="stat-label">Deuda Total</span>
-          <span class="stat-value">${{ totalDebt.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(totalDebt) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon available"><i class="pi pi-check-circle"></i></div>
         <div class="stat-info">
           <span class="stat-label">Disponible Total</span>
-          <span class="stat-value">${{ totalAvailable.toLocaleString() }}</span>
+          <span class="stat-value">${{ formatMoney(totalAvailable) }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -57,15 +57,15 @@
         <div class="card-details">
           <div class="detail-row">
             <span class="detail-label">Crédito Total</span>
-            <span class="detail-value">${{ card.creditLimit.toLocaleString() }}</span>
+            <span class="detail-value">${{ formatMoney(card.creditLimit) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Saldo a Deber</span>
-            <span class="detail-value debt-color">${{ card.debt.toLocaleString() }}</span>
+            <span class="detail-value debt-color">${{ formatMoney(card.debt) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Disponible</span>
-            <span class="detail-value available-color">${{ card.available.toLocaleString() }}</span>
+            <span class="detail-value available-color">${{ formatMoney(card.available) }}</span>
           </div>
           <div class="detail-row separator">
             <span class="detail-label">Fecha de Corte</span>
@@ -77,27 +77,15 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">Pago Mínimo</span>
-            <span class="detail-value">${{ card.minimumPayment.toLocaleString() }}</span>
+            <span class="detail-value">${{ formatMoney(card.minimumPayment) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Pago para No Generar Intereses</span>
-            <span class="detail-value highlight">${{ card.fullPayment.toLocaleString() }}</span>
+            <span class="detail-value highlight">${{ formatMoney(card.fullPayment) }}</span>
           </div>
         </div>
 
         <PaymentCountdown :days="daysUntilPayment(card.paymentDate)" />
-      </div>
-    </div>
-
-    <!-- Gráficas -->
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3>Distribución de Deuda por Tarjeta</h3>
-        <Doughnut :data="debtDistributionData" :options="doughnutOptions" />
-      </div>
-      <div class="chart-card">
-        <h3>Crédito vs Deuda por Tarjeta</h3>
-        <Bar :data="creditVsDebtData" :options="barOptions" />
       </div>
     </div>
 
@@ -124,9 +112,9 @@
                 <i class="pi pi-credit-card"></i> {{ card.name }}
               </span>
             </td>
-            <td>${{ card.creditLimit.toLocaleString() }}</td>
-            <td class="debt-color">${{ card.debt.toLocaleString() }}</td>
-            <td class="available-color">${{ card.available.toLocaleString() }}</td>
+            <td>${{ formatMoney(card.creditLimit) }}</td>
+            <td class="debt-color">${{ formatMoney(card.debt) }}</td>
+            <td class="available-color">${{ formatMoney(card.available) }}</td>
             <td>
               <span class="usage-badge" :class="getUsageClass(card.usagePercent)">
                 {{ card.usagePercent }}%
@@ -134,17 +122,17 @@
             </td>
             <td>{{ formatDate(card.cutoffDate) }}</td>
             <td>{{ formatDate(card.paymentDate) }}</td>
-            <td class="highlight">${{ card.fullPayment.toLocaleString() }}</td>
+            <td class="highlight">${{ formatMoney(card.fullPayment) }}</td>
           </tr>
           <tr class="totals-row">
             <td><strong>TOTAL</strong></td>
-            <td><strong>${{ totalCredit.toLocaleString() }}</strong></td>
-            <td class="debt-color"><strong>${{ totalDebt.toLocaleString() }}</strong></td>
-            <td class="available-color"><strong>${{ totalAvailable.toLocaleString() }}</strong></td>
+            <td><strong>${{ formatMoney(totalCredit) }}</strong></td>
+            <td class="debt-color"><strong>${{ formatMoney(totalDebt) }}</strong></td>
+            <td class="available-color"><strong>${{ formatMoney(totalAvailable) }}</strong></td>
             <td><strong>{{ usagePercent }}%</strong></td>
             <td>—</td>
             <td>—</td>
-            <td class="highlight"><strong>${{ totalPayment.toLocaleString() }}</strong></td>
+            <td class="highlight"><strong>${{ formatMoney(totalPayment) }}</strong></td>
           </tr>
         </tbody>
       </table>
@@ -153,22 +141,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Doughnut, Bar } from 'vue-chartjs'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import PaymentCountdown from '../components/PaymentCountdown.vue'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
+import { formatMoney } from '../utils/format.js'
 
 const cards = ref([])
 const totalCredit = ref(0)
@@ -190,70 +166,6 @@ onMounted(async () => {
     console.error('Error loading credit data:', error)
   }
 })
-
-// Gráfica de distribución de deuda
-const debtDistributionData = computed(() => ({
-  labels: cards.value.map(c => c.name),
-  datasets: [{
-    data: cards.value.map(c => c.debt),
-    backgroundColor: cards.value.map(c => c.color),
-    borderWidth: 0
-  }]
-}))
-
-const doughnutOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'bottom',
-      labels: { color: '#8899a6', padding: 16 }
-    }
-  }
-}
-
-// Gráfica de barras crédito vs deuda
-const creditVsDebtData = computed(() => ({
-  labels: cards.value.map(c => c.name),
-  datasets: [
-    {
-      label: 'Crédito Total',
-      data: cards.value.map(c => c.creditLimit),
-      backgroundColor: 'rgba(29, 161, 242, 0.6)',
-      borderRadius: 4
-    },
-    {
-      label: 'Deuda',
-      data: cards.value.map(c => c.debt),
-      backgroundColor: 'rgba(239, 68, 68, 0.6)',
-      borderRadius: 4
-    },
-    {
-      label: 'Disponible',
-      data: cards.value.map(c => c.available),
-      backgroundColor: 'rgba(16, 185, 129, 0.6)',
-      borderRadius: 4
-    }
-  ]
-}))
-
-const barOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      labels: { color: '#8899a6' }
-    }
-  },
-  scales: {
-    x: {
-      ticks: { color: '#8899a6' },
-      grid: { color: '#2d3741' }
-    },
-    y: {
-      ticks: { color: '#8899a6' },
-      grid: { color: '#2d3741' }
-    }
-  }
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -351,27 +263,6 @@ function getUsageClass(percent) {
   font-size: 1.3rem;
   font-weight: 700;
   color: #e1e8ed;
-}
-
-/* Charts */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.chart-card {
-  background-color: #15202b;
-  border: 1px solid #2d3741;
-  border-radius: 12px;
-  padding: 24px;
-}
-
-.chart-card h3 {
-  font-size: 1rem;
-  color: #e1e8ed;
-  margin-bottom: 16px;
 }
 
 /* Cards Grid */

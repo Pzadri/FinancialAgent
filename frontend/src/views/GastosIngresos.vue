@@ -65,7 +65,7 @@
             <td>{{ item.description }}</td>
             <td><span class="category-badge">{{ item.category }}</span></td>
             <td :class="item.amount > 0 ? 'income' : 'expense'">
-              {{ item.amount > 0 ? '+' : '' }}${{ Math.abs(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              {{ item.amount > 0 ? '+' : '' }}${{ formatMoney(Math.abs(item.amount)) }}
             </td>
           </tr>
           <tr v-if="filteredAndSorted.length === 0">
@@ -79,16 +79,16 @@
     <div class="summary-bar">
       <div class="summary-item">
         <span class="summary-label">Total Ingresos:</span>
-        <span class="income">+${{ totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+        <span class="income">+${{ formatMoney(totalIncome) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Total Gastos:</span>
-        <span class="expense">-${{ totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+        <span class="expense">-${{ formatMoney(totalExpenses) }}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Balance:</span>
         <span :class="balance >= 0 ? 'income' : 'expense'">
-          {{ balance >= 0 ? '+' : '' }}${{ Math.abs(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+          {{ balance >= 0 ? '+' : '' }}${{ formatMoney(Math.abs(balance)) }}
         </span>
       </div>
       <div class="summary-item">
@@ -102,6 +102,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { formatMoney } from '../utils/format.js'
 
 const transactions = ref([])
 const loading = ref(true)

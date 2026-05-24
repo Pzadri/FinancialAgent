@@ -18,7 +18,7 @@
         <div class="stat-icon debt"><i class="pi pi-exclamation-triangle"></i></div>
         <div class="stat-info">
           <span class="stat-label">Deuda Total</span>
-          <span class="stat-value">${{ totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+          <span class="stat-value">${{ formatMoney(totalDebt) }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -53,11 +53,11 @@
         <div class="deuda-details">
           <div class="detail-row">
             <span class="detail-label">Deuda Total</span>
-            <span class="detail-value debt-color">${{ deuda.totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+            <span class="detail-value debt-color">${{ formatMoney(deuda.totalDebt) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Cantidad a Pagar</span>
-            <span class="detail-value highlight">${{ deuda.paymentAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+            <span class="detail-value highlight">${{ formatMoney(deuda.paymentAmount) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Pagos Restantes</span>
@@ -85,6 +85,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import PaymentCountdown from '../components/PaymentCountdown.vue'
+import { formatMoney } from '../utils/format.js'
 
 const deudas = ref([])
 const totalDebt = ref(0)
@@ -95,7 +96,7 @@ const nextPaymentInfo = computed(() => {
   if (deudas.value.length === 0) return 'N/A'
   const sorted = [...deudas.value].sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
   const next = sorted[0]
-  return `${next.daysUntilPayment}d - $${next.paymentAmount.toLocaleString()}`
+  return `${next.daysUntilPayment}d - $${formatMoney(next.paymentAmount)}`
 })
 
 onMounted(async () => {

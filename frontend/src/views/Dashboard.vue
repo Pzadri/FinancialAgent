@@ -8,24 +8,27 @@
         <div class="stat-icon patrimony"><i class="pi pi-building"></i></div>
         <div class="stat-info">
           <span class="stat-label">Patrimonio Neto</span>
-          <span class="stat-value">${{ patrimony.toLocaleString() }}</span>
-          <span class="stat-sub income">Activos - Deudas</span>
+          <span class="stat-value">${{ formatMoney(patrimony) }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon income-icon"><i class="pi pi-arrow-up"></i></div>
         <div class="stat-info">
           <span class="stat-label">Ingresos (mes)</span>
-          <span class="stat-value">${{ monthlyIncome.toLocaleString() }}</span>
-          <span class="stat-sub income">+12% vs mes anterior</span>
+          <span class="stat-value">${{ formatMoney(monthlyIncome) }}</span>
+          <span class="stat-sub" :class="incomeVsPrev === null ? '' : incomeVsPrev >= 0 ? 'income' : 'expense'">
+            {{ incomeVsPrev === null ? 'Sin datos mes anterior' : (incomeVsPrev >= 0 ? '+' : '') + incomeVsPrev + '% vs mes anterior' }}
+          </span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon expense-icon"><i class="pi pi-arrow-down"></i></div>
         <div class="stat-info">
           <span class="stat-label">Gastos (mes)</span>
-          <span class="stat-value">${{ monthlyExpenses.toLocaleString() }}</span>
-          <span class="stat-sub expense">+5% vs mes anterior</span>
+          <span class="stat-value">${{ formatMoney(monthlyExpenses) }}</span>
+          <span class="stat-sub" :class="expensesVsPrev === null ? '' : expensesVsPrev > 0 ? 'expense' : 'income'">
+            {{ expensesVsPrev === null ? 'Sin datos mes anterior' : (expensesVsPrev >= 0 ? '+' : '') + expensesVsPrev + '% vs mes anterior' }}
+          </span>
         </div>
       </div>
       <div class="stat-card">
@@ -33,7 +36,9 @@
         <div class="stat-info">
           <span class="stat-label">Tasa de Ahorro</span>
           <span class="stat-value">{{ savingsRate }}%</span>
-          <span class="stat-sub">Meta: 30%</span>
+          <span class="stat-sub" :class="savingsRate >= 30 ? 'income' : 'expense'">
+            Meta: 30% — {{ savingsRate >= 30 ? '✓ Alcanzada' : (30 - savingsRate) + '% por alcanzar' }}
+          </span>
         </div>
       </div>
     </div>
@@ -49,7 +54,7 @@
           <div v-for="card in creditCards" :key="card.name" class="credit-bar-item">
             <div class="credit-bar-info">
               <span class="credit-bar-name" :style="{ color: card.color }">{{ card.name }}</span>
-              <span class="credit-bar-amount">${{ card.debt.toLocaleString() }} / ${{ card.limit.toLocaleString() }}</span>
+              <span class="credit-bar-amount">${{ formatMoney(card.debt) }} / ${{ formatMoney(card.limit) }}</span>
             </div>
             <div class="credit-bar-bg">
               <div class="credit-bar-fill" :style="{ width: card.usage + '%', backgroundColor: card.color }"></div>
@@ -59,11 +64,11 @@
         <div class="credit-totals">
           <div class="credit-total-item">
             <span class="ct-label">Deuda Total</span>
-            <span class="ct-value expense">${{ totalCreditDebt.toLocaleString() }}</span>
+            <span class="ct-value expense">${{ formatMoney(totalCreditDebt) }}</span>
           </div>
           <div class="credit-total-item">
             <span class="ct-label">Disponible</span>
-            <span class="ct-value income">${{ totalCreditAvailable.toLocaleString() }}</span>
+            <span class="ct-value income">${{ formatMoney(totalCreditAvailable) }}</span>
           </div>
         </div>
 
@@ -79,7 +84,7 @@
                 <span class="payment-date">{{ payment.date }}</span>
               </div>
               <div class="payment-right">
-                <span class="payment-amount" :style="{ color: paymentColor(payment.daysLeft) }">${{ payment.amount.toLocaleString() }}</span>
+                <span class="payment-amount" :style="{ color: paymentColor(payment.daysLeft) }">${{ formatMoney(payment.amount) }}</span>
                 <span class="payment-days" :style="{ color: paymentColor(payment.daysLeft) }">{{ payment.daysLeft }} días</span>
               </div>
             </div>
@@ -99,9 +104,9 @@
             </div>
             <div class="inv-info">
               <span class="inv-name">Liquidez</span>
-              <span class="inv-amount">${{ liquidez.toLocaleString() }}</span>
+              <span class="inv-amount">${{ formatMoney(liquidez) }}</span>
             </div>
-            <span class="inv-rate income">~14% anual</span>
+            <span class="inv-rate income">{{ formatPct(liquidezRate, 1) }}% anual</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b;">
@@ -109,9 +114,9 @@
             </div>
             <div class="inv-info">
               <span class="inv-name">Didi (Ahorro compartido)</span>
-              <span class="inv-amount">${{ didiBalance.toLocaleString() }}</span>
+              <span class="inv-amount">${{ formatMoney(didiBalance) }}</span>
             </div>
-            <span class="inv-rate income">15% anual</span>
+            <span class="inv-rate income">{{ formatPct(didiRate, 1) }}% anual</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
@@ -119,9 +124,9 @@
             </div>
             <div class="inv-info">
               <span class="inv-name">GBM (Acciones + ETFs)</span>
-              <span class="inv-amount">${{ gbmTotal.toLocaleString(undefined, { maximumFractionDigits: 0 }) }}</span>
+              <span class="inv-amount">${{ formatMoney(gbmTotal) }}</span>
             </div>
-            <span class="inv-rate" :class="gbmReturnPct >= 0 ? 'income' : 'expense'">{{ gbmReturnPct >= 0 ? '+' : '' }}{{ gbmReturnPct.toFixed(1) }}%</span>
+            <span class="inv-rate" :class="gbmReturnPct >= 0 ? 'income' : 'expense'">{{ gbmReturnPct >= 0 ? '+' : '' }}{{ formatMoney(gbmReturnPct, 1) }}%</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(29, 161, 242, 0.15); color: #1da1f2;">
@@ -129,37 +134,72 @@
             </div>
             <div class="inv-info">
               <span class="inv-name">Afore</span>
-              <span class="inv-amount">${{ afore.toLocaleString() }}</span>
+              <span class="inv-amount">${{ formatMoney(afore) }}</span>
             </div>
-            <span class="inv-rate">9.5% anual</span>
+            <span class="inv-rate" :class="aforeRate > 0 ? 'income' : ''">{{ formatPct(aforeRate, 1) }}% anual</span>
           </div>
         </div>
         <div class="inv-total">
           <span>Portafolio Total</span>
-          <strong>${{ totalPortfolio.toLocaleString() }}</strong>
+          <strong>${{ formatMoney(totalPortfolio) }}</strong>
         </div>
 
         <div class="daily-earnings">
           <h4>Ganancias Diarias por Intereses</h4>
           <div class="earnings-row" v-for="acc in savingsAccounts.filter(a => a.name !== 'Didi')" :key="acc.name">
-            <span>{{ acc.name }}</span><span class="income">+${{ acc.dailyGain.toFixed(2) }}</span>
+            <span>{{ acc.name }}</span><span class="income">+${{ formatMoney(acc.dailyGain) }}</span>
           </div>
           <div class="earnings-row total">
-            <span>Total diario</span><span class="income">+${{ dailyEarnings.toFixed(2) }}</span>
+            <span>Total diario</span><span class="income">+${{ formatMoney(dailyEarnings) }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Fila 3: Gráficas -->
+    <!-- Fila 3: Gráfica + Deudas -->
     <div class="row-3">
       <div class="card">
-        <h3>Ingresos vs Gastos (6 meses)</h3>
+        <div class="card-header">
+          <h3>Ingresos vs Gastos (6 meses)</h3>
+          <router-link to="/gastos-ingresos" class="card-link">Ver detalle →</router-link>
+        </div>
         <Line :data="lineChartData" :options="chartOptions" />
       </div>
-      <div class="card">
-        <h3>Distribución de Gastos</h3>
-        <Doughnut :data="doughnutData" :options="doughnutOptions" />
+      <div class="card debts-summary">
+        <div class="card-header">
+          <h3>Deudas</h3>
+          <router-link to="/deudas" class="card-link">Ver detalle →</router-link>
+        </div>
+
+        <div v-if="deudas.length === 0" class="debts-empty">
+          <i class="pi pi-check-circle"></i>
+          <span>Sin deudas registradas</span>
+        </div>
+
+        <div v-else>
+          <div class="debts-total-row">
+            <span class="debts-total-label">Deuda Total</span>
+            <span class="debts-total-value expense">${{ formatMoney(totalDeudas) }}</span>
+          </div>
+
+          <div class="debts-list">
+            <div v-for="deuda in deudas" :key="deuda.id" class="debt-item">
+              <div class="debt-item-left">
+                <div class="debt-icon"><i class="pi pi-money-bill"></i></div>
+                <div class="debt-info">
+                  <span class="debt-name">{{ deuda.name }}</span>
+                  <span class="debt-meta">{{ deuda.frequencyLabel }} · {{ deuda.paymentsRemaining }} pagos restantes</span>
+                </div>
+              </div>
+              <div class="debt-item-right">
+                <span class="debt-amount">${{ formatMoney(deuda.paymentAmount) }}</span>
+                <span class="debt-days" :style="{ color: debtDaysColor(deuda.daysUntilPayment) }">
+                  en {{ deuda.daysUntilPayment }} días
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -180,7 +220,7 @@
               <span class="movement-meta">{{ tx.category }} · {{ tx.date }}</span>
             </div>
             <span class="movement-amount" :class="tx.amount > 0 ? 'income' : 'expense'">
-              {{ tx.amount > 0 ? '+' : '' }}${{ Math.abs(tx.amount).toLocaleString() }}
+              {{ tx.amount > 0 ? '+' : '' }}${{ formatMoney(Math.abs(tx.amount)) }}
             </span>
           </div>
         </div>
@@ -191,22 +231,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Line, Doughnut } from 'vue-chartjs'
+import { Line } from 'vue-chartjs'
 import axios from 'axios'
+import { formatMoney, formatNumber, formatPct } from '../utils/format.js'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
   Filler
 } from 'chart.js'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
 // Reactive data from APIs
 const creditCards = ref([])
@@ -219,44 +259,60 @@ const totalLoans = ref(0)
 const gbmTotal = ref(0)
 const gbmReturnPct = ref(0)
 const afore = ref(0)
+const aforeRate = ref(0)
 const dailyEarnings = ref(0)
 const savingsAccounts = ref([])
 
 const recentTransactions = ref([])
 const monthlyIncome = ref(0)
 const monthlyExpenses = ref(0)
+const prevMonthIncome = ref(0)
+const prevMonthExpenses = ref(0)
+const deudas = ref([])
+const totalDeudas = ref(0)
 
 const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + gbmTotal.value + afore.value)
 const patrimony = computed(() => totalPortfolio.value - totalCreditDebt.value)
 const savingsRate = computed(() => monthlyIncome.value > 0 ? Math.round(((monthlyIncome.value - monthlyExpenses.value) / monthlyIncome.value) * 100) : 0)
-const liquidez = computed(() => {
-  const revolut = savingsAccounts.value.find(a => a.name === 'Revolut')
-  const nu = savingsAccounts.value.find(a => a.name === 'Cajita Nu')
-  return (revolut ? revolut.balance : 0) + (nu ? nu.balance : 0)
+
+// Variación vs mes anterior (%)
+const incomeVsPrev = computed(() => {
+  if (!prevMonthIncome.value) return null
+  return Math.round(((monthlyIncome.value - prevMonthIncome.value) / prevMonthIncome.value) * 100)
 })
-const didiBalance = computed(() => {
-  const didi = savingsAccounts.value.find(a => a.name === 'Didi')
-  return didi ? didi.balance : 0
+const expensesVsPrev = computed(() => {
+  if (!prevMonthExpenses.value) return null
+  return Math.round(((monthlyExpenses.value - prevMonthExpenses.value) / prevMonthExpenses.value) * 100)
 })
 
-// Chart data (computed from GI records)
-const lineChartData = ref({
-  labels: [],
-  datasets: []
+// Cuentas de ahorro por nombre (dinámico desde API)
+const liquidezAccounts = computed(() => savingsAccounts.value.filter(a =>
+  a.name === 'Revolut' || a.name === 'Cajita Nu'
+))
+const liquidez = computed(() => liquidezAccounts.value.reduce((s, a) => s + a.balance, 0))
+const liquidezRate = computed(() => {
+  if (!liquidezAccounts.value.length) return 0
+  const total = liquidezAccounts.value.reduce((s, a) => s + a.balance, 0)
+  if (!total) return 0
+  // Promedio ponderado por saldo
+  return liquidezAccounts.value.reduce((s, a) => s + a.annualRate * (a.balance / total), 0)
 })
 
-const doughnutData = ref({
-  labels: [],
-  datasets: [{ data: [], backgroundColor: [] }]
-})
+const didiAccount = computed(() => savingsAccounts.value.find(a => a.name === 'Didi'))
+const didiBalance = computed(() => didiAccount.value ? didiAccount.value.balance : 0)
+const didiRate = computed(() => didiAccount.value ? didiAccount.value.annualRate : 0)
+
+// Chart data
+const lineChartData = ref({ labels: [], datasets: [] })
 
 onMounted(async () => {
   try {
-    const [gbmRes, creditRes, invRes, giRes] = await Promise.all([
+    const [gbmRes, creditRes, invRes, giRes, deudasRes] = await Promise.all([
       axios.get('/api/gbm/portfolio'),
       axios.get('/api/creditos'),
       axios.get('/api/inversiones'),
-      axios.get('/api/gi/records')
+      axios.get('/api/gi/records'),
+      axios.get('/api/deudas')
     ])
 
     // GBM
@@ -291,6 +347,7 @@ onMounted(async () => {
     totalSavings.value = inv.summary.totalSavings
     totalLoans.value = inv.summary.totalLoans
     afore.value = inv.afore.balance || 0
+    aforeRate.value = inv.afore.annualReturn || 0
     savingsAccounts.value = inv.ahorro
 
     // Daily earnings from savings (Revolut + Nu)
@@ -300,7 +357,7 @@ onMounted(async () => {
 
     // GI Records
     const records = giRes.data.records || []
-    
+
     // Recent transactions (last 5)
     recentTransactions.value = records.slice(0, 5).map(r => ({
       id: r.id,
@@ -310,19 +367,26 @@ onMounted(async () => {
       amount: r.amount
     }))
 
-    // Calculate monthly income/expenses from current month
+    // Mes actual y mes anterior
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`
+
     const thisMonthRecords = records.filter(r => r.date && r.date.startsWith(currentMonth))
-    
+    const prevMonthRecords = records.filter(r => r.date && r.date.startsWith(prevMonth))
+
     monthlyIncome.value = thisMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
     monthlyExpenses.value = thisMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+    prevMonthIncome.value = prevMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
+    prevMonthExpenses.value = prevMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
 
     // Build line chart: last 6 months income vs expenses
     buildLineChart(records)
 
-    // Build doughnut: expense categories this month
-    buildDoughnut(thisMonthRecords)
+    // Deudas
+    deudas.value = deudasRes.data.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
+    totalDeudas.value = deudasRes.data.totalDebt
 
   } catch (error) {
     console.error('Error loading dashboard data:', error)
@@ -371,30 +435,16 @@ function buildLineChart(records) {
   }
 }
 
-function buildDoughnut(monthRecords) {
-  const expenses = monthRecords.filter(r => r.amount < 0)
-  const categoryMap = {}
-  expenses.forEach(r => {
-    const cat = r.category || 'Otros'
-    categoryMap[cat] = (categoryMap[cat] || 0) + Math.abs(r.amount)
-  })
-
-  const colors = ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280', '#ec4899', '#06b6d4']
-  const entries = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
-
-  doughnutData.value = {
-    labels: entries.map(e => e[0]),
-    datasets: [{
-      data: entries.map(e => e[1]),
-      backgroundColor: entries.map((_, i) => colors[i % colors.length])
-    }]
-  }
-}
-
 function paymentColor(days) {
   if (days <= 5) return '#ef4444'
   if (days < 15) return '#f59e0b'
   return '#10b981'
+}
+
+function debtDaysColor(days) {
+  if (days <= 5) return '#ef4444'
+  if (days <= 10) return '#f59e0b'
+  return '#8899a6'
 }
 
 function formatPaymentDate(dateStr) {
@@ -417,13 +467,6 @@ const chartOptions = {
   scales: {
     x: { ticks: { color: '#8899a6' }, grid: { color: '#2d3741' } },
     y: { ticks: { color: '#8899a6' }, grid: { color: '#2d3741' } }
-  }
-}
-
-const doughnutOptions = {
-  responsive: true,
-  plugins: {
-    legend: { position: 'bottom', labels: { color: '#8899a6' } }
   }
 }
 </script>
@@ -724,6 +767,64 @@ const doughnutOptions = {
 .income { color: #10b981; font-weight: 600; }
 .expense { color: #ef4444; font-weight: 600; }
 .highlight { color: #f59e0b; }
+
+/* Debts Summary */
+.debts-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: #192734;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.debts-total-label { font-size: 0.82rem; color: #8899a6; }
+.debts-total-value { font-size: 1.1rem; font-weight: 700; }
+
+.debts-list { display: flex; flex-direction: column; gap: 8px; }
+
+.debt-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background-color: #192734;
+  border-radius: 8px;
+  gap: 10px;
+}
+
+.debt-item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+
+.debt-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.debt-info { display: flex; flex-direction: column; min-width: 0; }
+.debt-name { font-size: 0.85rem; color: #e1e8ed; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.debt-meta { font-size: 0.7rem; color: #8899a6; }
+
+.debt-item-right { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.debt-amount { font-size: 0.9rem; font-weight: 700; color: #e1e8ed; }
+.debt-days { font-size: 0.7rem; }
+
+.debts-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #10b981;
+  font-size: 0.85rem;
+  padding: 12px 0;
+}
 
 @media (max-width: 768px) {
   .row-2, .row-3, .row-4 {
