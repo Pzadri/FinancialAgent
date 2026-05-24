@@ -22,24 +22,43 @@
     <div class="sidebar-footer">
       <div class="sidebar-link">
         <i class="pi pi-send"></i>
-        <span v-if="isExpanded" class="link-label">Telegram Bot</span>
-      </div>
-      <div class="bot-status" v-if="isExpanded">
-        <span class="status-dot online"></span>
-        <span class="status-text">Conectado</span>
+        <span v-if="isExpanded" class="link-label">
+          Telegram Bot
+          <span class="bot-status-inline">
+            <span class="status-dot" :class="botOnline ? 'online' : 'offline'"></span>
+            <span class="status-text">{{ botOnline ? 'Conectado' : 'Desconectado' }}</span>
+          </span>
+        </span>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const isExpanded = ref(false)
+const botOnline = ref(false)
 
 const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
+
+async function checkBotStatus() {
+  try {
+    const res = await axios.get('/api/telegram/status')
+    botOnline.value = res.data.connected === true
+  } catch {
+    botOnline.value = false
+  }
+}
+
+onMounted(() => {
+  checkBotStatus()
+  // Re-verificar cada 60 segundos
+  setInterval(checkBotStatus, 60000)
+})
 </script>
 
 <style scoped>
@@ -121,34 +140,34 @@ const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
 .link-label {
   white-space: nowrap;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-footer {
-  padding: 16px;
   border-top: 1px solid #2d3741;
 }
 
-.bot-status {
+.bot-status-inline {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-left: 16px;
+  gap: 5px;
+  margin-top: 2px;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: #6b7280;
+  flex-shrink: 0;
 }
 
-.status-dot.online {
-  background-color: #10b981;
-}
+.status-dot.online  { background-color: #10b981; }
+.status-dot.offline { background-color: #ef4444; }
 
 .status-text {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #8899a6;
 }
+
 </style>

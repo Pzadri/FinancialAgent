@@ -42,7 +42,13 @@ def get_ahorro() -> list[dict]:
 
 
 def get_prestamos() -> list[dict]:
-    """Read loans from Excel."""
+    """Read loans from Excel and calculate interest and total return.
+    
+    The interest calculation considers:
+    - Rate is annual (%)
+    - Term is in months
+    - Formula: Interest = Principal × (Annual_Rate / 100) × (Months / 12)
+    """
     filepath = DATA_DIR / "prestamos.xlsx"
     if not filepath.exists():
         return []
@@ -55,23 +61,75 @@ def get_prestamos() -> list[dict]:
         if not row or row[0] is None:
             continue
         try:
+            principal = float(row[1]) if row[1] else 0
+            rate = float(row[2]) if row[2] else 0
+            term_str = str(row[3]) if row[3] else ""
+            
+            # Extraer el número de meses del plazo
+            months = _parse_term_to_months(term_str)
+            
+            # Calcular interés esperado (tasa anual prorrateada por meses)
+            # Interés = Capital × (Tasa_Anual / 100) × (Meses / 12)
+            expected_interest = principal * (rate / 100) * (months / 12)
+            total_return = principal + expected_interest
+            
+            # Normalizar el estado
+            status_raw = str(row[4]).lower().strip() if row[4] else "activo"
+            
+            # Determinar si el préstamo está activo
+            # Estados activos: "activo", "en curso", "vigente"
+            # Estados inactivos: "pagado", "cancelado", "finalizado"
+            is_active = status_raw in ["activo", "en curso", "vigente"]
+            status_label = "Activo" if is_active else "Pagado"
+            
             loans.append({
                 "id": idx,
                 "borrower": str(row[0]),
-                "principal": float(row[1]) if row[1] else 0,
-                "rate": float(row[2]) if row[2] else 0,
-                "term": str(row[3]) if row[3] else "",
-                "expectedInterest": float(row[4]) if row[4] else 0,
-                "totalReturn": float(row[5]) if row[5] else 0,
-                "status": str(row[6]).lower() if row[6] else "activo",
-                "statusLabel": "Activo" if str(row[6]).lower() == "activo" else "Pagado",
-                "dueDate": str(row[7]) if row[7] else ""
+                "principal": principal,
+                "rate": rate,
+                "term": term_str,
+                "expectedInterest": round(expected_interest, 2),
+                "totalReturn": round(total_return, 2),
+                "status": "activo" if is_active else "pagado",  # Normalizado para el frontend
+                "statusLabel": status_label
             })
         except (ValueError, TypeError, IndexError):
             continue
 
     wb.close()
     return loans
+
+
+def _parse_term_to_months(term_str: str) -> int:
+    """Parse term string to number of months.
+    
+    Examples:
+        "6 meses" -> 6
+        "1 año" -> 12
+        "2 años" -> 24
+        "18" -> 18
+    """
+    import re
+    
+    term_lower = term_str.lower().strip()
+    
+    # Buscar número en el string
+    numbers = re.findall(r'\d+', term_lower)
+    if not numbers:
+        return 12  # Default a 1 año si no se encuentra número
+    
+    num = int(numbers[0])
+    
+    # Si contiene "año" o "year", multiplicar por 12
+    if 'año' in term_lower or 'year' in term_lower:
+        return num * 12
+    
+    # Si contiene "mes" o "month", usar el número directamente
+    if 'mes' in term_lower or 'month' in term_lower:
+        return num
+    
+    # Si solo es un número sin unidad, asumir que son meses
+    return num
 
 
 def get_afore() -> dict:

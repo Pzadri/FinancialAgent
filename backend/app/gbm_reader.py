@@ -1,12 +1,26 @@
 """Module to read GBM portfolio Excel files and return structured data."""
-import os
 import openpyxl
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "gbm"
 
-# Tipo de cambio USD/MXN (se puede actualizar)
-USD_MXN = 19.45
+# Tipo de cambio USD/MXN por defecto (fallback si falla la consulta)
+_USD_MXN_FALLBACK = 19.45
+
+
+def fetch_usd_mxn() -> float:
+    """Obtiene el tipo de cambio USD/MXN en tiempo real.
+    Usa httpx (ya instalado) para evitar bloqueos por User-Agent.
+    Si falla, regresa el valor de fallback."""
+    try:
+        import httpx
+        url = "https://api.frankfurter.app/latest?base=USD&symbols=MXN"
+        resp = httpx.get(url, timeout=5, follow_redirects=True)
+        resp.raise_for_status()
+        data = resp.json()
+        return round(float(data["rates"]["MXN"]), 4)
+    except Exception:
+        return _USD_MXN_FALLBACK
 
 
 def read_nacional() -> list[dict]:
@@ -78,7 +92,7 @@ def read_nacional() -> list[dict]:
     return instruments
 
 
-def read_usa() -> list[dict]:
+def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
     """Read USA market portfolio from Excel."""
     filepath = DATA_DIR / "portafolio-usa.xlsx"
     if not filepath.exists():
@@ -127,7 +141,7 @@ def read_usa() -> list[dict]:
                 "avgCost": avg_cost,
                 "marketPrice": market_price,
                 "marketValue": market_value,
-                "marketValueMXN": round(market_value * USD_MXN, 2),
+                "marketValueMXN": round(market_value * usd_mxn, 2),
                 "gainLoss": gain_loss,
                 "returnPct": round(((market_price - avg_cost) / avg_cost) * 100, 2) if avg_cost > 0 else 0,
                 "varDayPct": var_day_pct,
@@ -143,8 +157,11 @@ def read_usa() -> list[dict]:
 
 def get_full_portfolio() -> dict:
     """Get complete portfolio data with summaries."""
+    # Obtener tipo de cambio en tiempo real
+    USD_MXN = fetch_usd_mxn()
+
     nacional = read_nacional()
-    usa = read_usa()
+    usa = read_usa(USD_MXN)
 
     # Calculate totals
     nacional_value = sum(i["marketValue"] for i in nacional)

@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.telegram_bot import send_telegram_message, get_bot_info, get_updates
@@ -8,6 +9,9 @@ from app.creditos_reader import get_credit_cards
 from app.inversiones_reader import get_all_inversiones
 from app.deudas_manager import get_all_deudas, add_deuda, delete_deuda
 from app.config import TELEGRAM_CHAT_ID
+from app.update_tracker import get_status, mark_updated
+
+GBM_DIR = Path(__file__).parent.parent.parent / "data" / "gbm"
 
 app = FastAPI(title="Financial Dashboard API", version="1.0.0")
 
@@ -104,6 +108,53 @@ async def gbm_portfolio():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/gbm/update-status")
+async def gbm_update_status():
+    """Check if GBM data needs to be updated (Mondays)."""
+    return get_status("gbm")
+
+
+@app.post("/api/gbm/upload")
+async def gbm_upload(
+    nacional: UploadFile = File(...),
+    usa: UploadFile = File(...)
+):
+    """Upload new GBM Excel files. Replaces portafolio-nacional.xlsx and portafolio-usa.xlsx."""
+    # Validar que sean .xlsx
+    for f in [nacional, usa]:
+        if not f.filename.lower().endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail=f"El archivo '{f.filename}' no es un .xlsx válido.")
+
+    try:
+        GBM_DIR.mkdir(parents=True, exist_ok=True)
+
+        # Guardar nacional
+        nacional_path = GBM_DIR / "portafolio-nacional.xlsx"
+        content = await nacional.read()
+        nacional_path.write_bytes(content)
+
+        # Guardar usa
+        usa_path = GBM_DIR / "portafolio-usa.xlsx"
+        content = await usa.read()
+        usa_path.write_bytes(content)
+
+        # Marcar como actualizado
+        today = mark_updated("gbm")
+
+        return {
+            "success": True,
+            "updatedAt": today,
+            "files": {
+                "nacional": nacional.filename,
+                "usa": usa.filename
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ===== Gastos / Ingresos =====
 
 class GIRecord(BaseModel):
@@ -176,6 +227,19 @@ async def inversiones_get():
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/inversiones/update-status")
+async def inversiones_update_status():
+    """Check if savings data needs to be updated (Mondays)."""
+    return get_status("ahorro")
+
+
+@app.post("/api/inversiones/mark-updated")
+async def inversiones_mark_updated():
+    """Mark savings data as updated today."""
+    today = mark_updated("ahorro")
+    return {"success": True, "updatedAt": today}
 
 
 # ===== Deudas =====

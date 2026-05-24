@@ -78,7 +78,7 @@
             <span class="recent-meta">{{ record.category }} · {{ formatDate(record.date) }}</span>
           </div>
           <span :class="record.amount > 0 ? 'income' : 'expense'" class="recent-amount">
-            {{ record.amount > 0 ? '+' : '-' }}${{ Math.abs(record.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+            {{ record.amount > 0 ? '+' : '-' }}${{ formatMoney(Math.abs(record.amount)) }}
           </span>
         </div>
         <div v-if="recentRecords.length === 0" class="empty-state">
@@ -92,8 +92,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { formatMoney } from '../utils/format.js'
 
-const categories = ['Freelance', 'Delivery', 'Sueldo', 'Creditos', 'Prestamos']
+const categories = ['Freelance', 'Delivery', 'Sueldo', 'Creditos', 'Prestamos', 'Otros']
 
 const form = ref({
   type: '',
@@ -121,7 +122,7 @@ async function submitRecord() {
 
     const record = response.data.record
     recentRecords.value.unshift(record)
-    successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${Math.abs(record.amount).toLocaleString()}`
+    successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${formatMoney(Math.abs(record.amount))}`
     errorMessage.value = ''
 
     setTimeout(() => { successMessage.value = '' }, 3000)

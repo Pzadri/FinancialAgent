@@ -6,11 +6,13 @@
       <h3>Bot de Telegram</h3>
       <div class="setting-item">
         <label>Estado del Bot</label>
-        <span class="status-badge online">Conectado</span>
+        <span class="status-badge" :class="botConnected ? 'online' : 'offline'">
+          {{ botConnected ? 'Conectado' : 'Desconectado' }}
+        </span>
       </div>
       <div class="setting-item">
         <label>Bot</label>
-        <span class="setting-value">@finARG_bot</span>
+        <span class="setting-value">{{ botUsername || '@finARG_bot' }}</span>
       </div>
       <div class="setting-item">
         <label>Chat ID</label>
@@ -41,13 +43,17 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const chatId = ref('')
+const botUsername = ref('')
+const botConnected = ref(false)
 
 onMounted(async () => {
   try {
     const response = await axios.get('/api/telegram/status')
-    chatId.value = response.data.chat_id
-  } catch (error) {
-    console.error('Error fetching bot status:', error)
+    botConnected.value = response.data.connected === true
+    chatId.value = response.data.chat_id || ''
+    botUsername.value = response.data.bot_username ? '@' + response.data.bot_username : ''
+  } catch {
+    botConnected.value = false
   }
 })
 </script>
@@ -110,5 +116,10 @@ onMounted(async () => {
 .status-badge.online {
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
+}
+
+.status-badge.offline {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
 </style>
