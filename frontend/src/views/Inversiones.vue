@@ -426,7 +426,6 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { Line, Doughnut, Bar } from 'vue-chartjs'
-import axios from 'axios'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -444,6 +443,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler)
 
 import { formatMoney, formatNumber, formatPct } from '../utils/format.js'
+import { mockInversiones, mockGBM, mockUpdateStatus } from '../data/mockData.js'
 
 const activeTab = ref('savings')
 
@@ -649,73 +649,57 @@ const gbmCashPerformanceData = computed(() => {
 
 async function loadGBMData() {
   try {
-    const response = await axios.get('/api/gbm/portfolio')
-    gbmNacional.value = response.data.nacional
-    gbmUSA.value = response.data.usa
-    gbmSummary.value = response.data.summary
-  } catch (error) {
-    console.error('Error loading GBM data:', error)
+    gbmNacional.value = mockGBM.nacional
+    gbmUSA.value = mockGBM.usa
+    gbmSummary.value = mockGBM.summary
   } finally {
     gbmLoading.value = false
   }
 }
 
 async function loadInversiones() {
-  try {
-    const response = await axios.get('/api/inversiones')
-    const data = response.data
+  const data = mockInversiones
 
-    // Ahorro
-    data.ahorro.forEach(a => {
-      savingsAccounts.push({ ...a, selectedPeriod: '1m' })
-    })
+  // Ahorro
+  data.ahorro.forEach(a => {
+    savingsAccounts.push({ ...a, selectedPeriod: '1m' })
+  })
 
-    // Préstamos
-    loans.value = data.prestamos
-    totalLoans.value = data.summary.totalLoans
-    totalLoanInterest.value = data.summary.totalLoanInterest
-    avgLoanRate.value = data.summary.avgLoanRate
+  // Préstamos
+  loans.value = data.prestamos
+  totalLoans.value = data.summary.totalLoans
+  totalLoanInterest.value = data.summary.totalLoanInterest
+  avgLoanRate.value = data.summary.avgLoanRate
 
-    // Afore
-    Object.assign(afore, data.afore)
-  } catch (error) {
-    console.error('Error loading inversiones data:', error)
-  }
+  // Afore
+  Object.assign(afore, data.afore)
 }
 
 // ===== ESTADO DE ACTUALIZACIÓN =====
-const updateStatus = ref({ needsUpdate: false, lastUpdate: null, isMonday: false, daysSinceUpdate: null })
+const updateStatus = ref({ ...mockUpdateStatus })
 const updating = ref(false)
 
 async function loadUpdateStatus() {
-  try {
-    const res = await axios.get('/api/inversiones/update-status')
-    updateStatus.value = res.data
-  } catch { /* silencioso */ }
+  updateStatus.value = { ...mockUpdateStatus }
 }
 
 async function markUpdated() {
   updating.value = true
-  try {
-    await axios.post('/api/inversiones/mark-updated')
-    await loadUpdateStatus()
-  } catch { /* silencioso */ } finally {
+  setTimeout(() => {
+    updateStatus.value = { ...mockUpdateStatus, needsUpdate: false }
     updating.value = false
-  }
+  }, 800)
 }
 
 // ===== ESTADO DE ACTUALIZACIÓN GBM =====
-const gbmUpdateStatus = ref({ needsUpdate: false, lastUpdate: null, isMonday: false, daysSinceUpdate: null })
+const gbmUpdateStatus = ref({ ...mockUpdateStatus })
 const showGbmUpload = ref(false)
 const uploading = ref(false)
 const uploadError = ref('')
 const files = ref({ nacional: null, usa: null })
 
 async function loadGbmUpdateStatus() {
-  try {
-    const res = await axios.get('/api/gbm/update-status')
-    gbmUpdateStatus.value = res.data
-  } catch { /* silencioso */ }
+  gbmUpdateStatus.value = { ...mockUpdateStatus }
 }
 
 function onFileChange(type, event) {
@@ -726,27 +710,11 @@ function onFileChange(type, event) {
 async function uploadGbm() {
   uploading.value = true
   uploadError.value = ''
-  try {
-    const form = new FormData()
-    form.append('nacional', files.value.nacional)
-    form.append('usa', files.value.usa)
-
-    await axios.post('/api/gbm/upload', form, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-
-    // Recargar datos del portafolio con los nuevos archivos
-    gbmLoading.value = true
-    await loadGBMData()
-    await loadGbmUpdateStatus()
-
+  setTimeout(() => {
+    uploading.value = false
     showGbmUpload.value = false
     files.value = { nacional: null, usa: null }
-  } catch (e) {
-    uploadError.value = e.response?.data?.detail || 'Error al subir los archivos.'
-  } finally {
-    uploading.value = false
-  }
+  }, 1000)
 }
 
 onMounted(() => {
@@ -1203,11 +1171,60 @@ function formatDate(dateStr) {
 }
 
 @media (max-width: 768px) {
+  .page-title { font-size: 1.4rem; }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .charts-grid { grid-template-columns: 1fr; }
   .savings-cards { grid-template-columns: 1fr; }
-  .loans-summary, .gbm-summary { flex-direction: column; }
+  .loans-summary, .gbm-summary { flex-direction: column; gap: 12px; }
   .section-tabs { flex-wrap: wrap; }
+
+  .update-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-update { width: 100%; justify-content: center; }
+
+  /* Tablas GBM: ocultar columnas menos críticas */
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4),
+  .data-table th:nth-child(5),
+  .data-table td:nth-child(5) {
+    display: none;
+  }
 }
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-btn {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .tab-btn i { display: none; }
+
+  .period-selector {
+    flex-wrap: wrap;
+  }
+
+  .period-btn {
+    flex: none;
+    min-width: calc(100% / 4);
+  }
+
+  .afore-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 
 /* ── Banner de actualización ─────────────────────────────────────────── */
 .update-banner {

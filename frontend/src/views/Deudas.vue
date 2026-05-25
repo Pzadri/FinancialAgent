@@ -83,9 +83,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
 import PaymentCountdown from '../components/PaymentCountdown.vue'
 import { formatMoney } from '../utils/format.js'
+import { mockDeudas } from '../data/mockData.js'
 
 const deudas = ref([])
 const totalDebt = ref(0)
@@ -99,19 +99,10 @@ const nextPaymentInfo = computed(() => {
   return `${next.daysUntilPayment}d - $${formatMoney(next.paymentAmount)}`
 })
 
-onMounted(async () => {
-  await loadDeudas()
+onMounted(() => {
+  deudas.value = mockDeudas.deudas
+  totalDebt.value = mockDeudas.totalDebt
 })
-
-async function loadDeudas() {
-  try {
-    const response = await axios.get('/api/deudas')
-    deudas.value = response.data.deudas
-    totalDebt.value = response.data.totalDebt
-  } catch (error) {
-    console.error('Error loading deudas:', error)
-  }
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -275,6 +266,25 @@ function formatDate(dateStr) {
 .empty-state p { font-size: 1rem; }
 
 @media (max-width: 768px) {
+  .page-title { font-size: 1.4rem; }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .deudas-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
 </style>

@@ -1,20 +1,21 @@
 <template>
+  <!-- Desktop: hover expand/collapse -->
   <nav
     class="sidebar"
-    :class="{ expanded: isExpanded }"
-    @mouseenter="isExpanded = true"
-    @mouseleave="isExpanded = false"
+    :class="{ expanded: isExpanded, 'mobile-open': mobileOpen }"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <div class="sidebar-header">
       <i class="pi pi-chart-line sidebar-logo"></i>
-      <span v-if="isExpanded" class="sidebar-title">FinARG</span>
+      <span v-if="isExpanded || mobileOpen" class="sidebar-title">FinBOT</span>
     </div>
 
     <ul class="sidebar-menu">
       <li v-for="route in routes" :key="route.path">
-        <router-link :to="route.path" class="sidebar-link" active-class="active">
+        <router-link :to="route.path" class="sidebar-link" active-class="active" @click="$emit('close')">
           <i :class="route.meta.icon"></i>
-          <span v-if="isExpanded" class="link-label">{{ route.meta.label }}</span>
+          <span v-if="isExpanded || mobileOpen" class="link-label">{{ route.meta.label }}</span>
         </router-link>
       </li>
     </ul>
@@ -22,7 +23,7 @@
     <div class="sidebar-footer">
       <div class="sidebar-link">
         <i class="pi pi-send"></i>
-        <span v-if="isExpanded" class="link-label">
+        <span v-if="isExpanded || mobileOpen" class="link-label">
           Telegram Bot
           <span class="bot-status-inline">
             <span class="status-dot" :class="botOnline ? 'online' : 'offline'"></span>
@@ -35,30 +36,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+
+const props = defineProps({
+  mobileOpen: { type: Boolean, default: false }
+})
+defineEmits(['close'])
 
 const router = useRouter()
 const isExpanded = ref(false)
-const botOnline = ref(false)
+const botOnline = ref(true)
 
 const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
 
-async function checkBotStatus() {
-  try {
-    const res = await axios.get('/api/telegram/status')
-    botOnline.value = res.data.connected === true
-  } catch {
-    botOnline.value = false
-  }
+function onMouseEnter() {
+  // Solo expandir con hover en desktop (no en móvil donde ya está abierto por prop)
+  if (window.innerWidth > 768) isExpanded.value = true
 }
-
-onMounted(() => {
-  checkBotStatus()
-  // Re-verificar cada 60 segundos
-  setInterval(checkBotStatus, 60000)
-})
+function onMouseLeave() {
+  if (window.innerWidth > 768) isExpanded.value = false
+}
 </script>
 
 <style scoped>
@@ -77,6 +75,7 @@ onMounted(() => {
   overflow: hidden;
 }
 
+/* Desktop hover expand */
 .sidebar.expanded {
   width: 240px;
 }
@@ -87,6 +86,7 @@ onMounted(() => {
   padding: 20px 16px;
   gap: 12px;
   border-bottom: 1px solid #2d3741;
+  flex-shrink: 0;
 }
 
 .sidebar-logo {
@@ -107,6 +107,7 @@ onMounted(() => {
   list-style: none;
   padding: 12px 0;
   flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar-link {
@@ -146,6 +147,7 @@ onMounted(() => {
 
 .sidebar-footer {
   border-top: 1px solid #2d3741;
+  flex-shrink: 0;
 }
 
 .bot-status-inline {
@@ -170,4 +172,22 @@ onMounted(() => {
   color: #8899a6;
 }
 
+/* ── Mobile: drawer desde la izquierda ─────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    /* Oculto por defecto */
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* En móvil no hay hover expand, el sidebar ya está expandido cuando abre */
+  .sidebar.expanded {
+    width: 260px;
+  }
+}
 </style>

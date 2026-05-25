@@ -101,25 +101,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
 import { formatMoney } from '../utils/format.js'
+import { mockGIRecords } from '../data/mockData.js'
 
 const transactions = ref([])
-const loading = ref(true)
-
-async function loadRecords() {
-  try {
-    const response = await axios.get('/api/gi/records')
-    transactions.value = response.data.records
-  } catch (error) {
-    console.error('Error loading records:', error)
-  } finally {
-    loading.value = false
-  }
-}
+const loading = ref(false)
 
 onMounted(() => {
-  loadRecords()
+  transactions.value = mockGIRecords.records
 })
 
 const filters = ref({
@@ -464,6 +453,14 @@ function clearFilters() {
 }
 
 @media (max-width: 768px) {
+  .page-title { font-size: 1.4rem; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
   .filters-bar {
     flex-direction: column;
   }
@@ -471,5 +468,19 @@ function clearFilters() {
   .filter-input {
     min-width: 100%;
   }
+
+  .summary-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
+
+@media (max-width: 480px) {
+  /* Tabla: ocultar columna categoría en pantallas muy pequeñas */
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) {
+    display: none;
+  }
+}
+
 </style>

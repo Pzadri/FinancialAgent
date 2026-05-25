@@ -91,7 +91,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import axios from 'axios'
 import { formatMoney } from '../utils/format.js'
 
 const categories = ['Freelance', 'Delivery', 'Sueldo', 'Creditos', 'Prestamos', 'Otros']
@@ -111,26 +110,20 @@ const errorMessage = ref('')
 const categoriesForType = computed(() => categories)
 
 async function submitRecord() {
-  try {
-    const response = await axios.post('/api/gi/records', {
-      date: form.value.date,
-      description: form.value.description,
-      category: form.value.category,
-      type: form.value.type,
-      amount: form.value.amount
-    })
-
-    const record = response.data.record
-    recentRecords.value.unshift(record)
-    successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${formatMoney(Math.abs(record.amount))}`
-    errorMessage.value = ''
-
-    setTimeout(() => { successMessage.value = '' }, 3000)
-    resetForm()
-  } catch (error) {
-    errorMessage.value = '❌ Error al registrar: ' + (error.response?.data?.detail || error.message)
-    setTimeout(() => { errorMessage.value = '' }, 4000)
+  // Demo mode: simulate success without backend
+  const amount = form.value.type === 'gasto' ? -Math.abs(form.value.amount) : Math.abs(form.value.amount)
+  const record = {
+    id: Date.now(),
+    date: form.value.date,
+    description: form.value.description,
+    category: form.value.category,
+    amount
   }
+  recentRecords.value.unshift(record)
+  successMessage.value = `✅ ${form.value.type === 'ingreso' ? 'Ingreso' : 'Gasto'} registrado: $${formatMoney(Math.abs(amount))}`
+  errorMessage.value = ''
+  setTimeout(() => { successMessage.value = '' }, 3000)
+  resetForm()
 }
 
 function resetForm() {
@@ -389,8 +382,24 @@ function formatDate(dateStr) {
 }
 
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .btn-back {
+    position: static;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+    margin-bottom: 0;
+  }
+
   .form-row {
     flex-direction: column;
   }
 }
+
 </style>

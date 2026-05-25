@@ -40,21 +40,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { mockTelegramStatus } from '../data/mockData.js'
 
 const chatId = ref('')
 const botUsername = ref('')
 const botConnected = ref(false)
 
-onMounted(async () => {
-  try {
-    const response = await axios.get('/api/telegram/status')
-    botConnected.value = response.data.connected === true
-    chatId.value = response.data.chat_id || ''
-    botUsername.value = response.data.bot_username ? '@' + response.data.bot_username : ''
-  } catch {
-    botConnected.value = false
-  }
+onMounted(() => {
+  botConnected.value = mockTelegramStatus.connected
+  chatId.value = mockTelegramStatus.chat_id
+  botUsername.value = mockTelegramStatus.bot_username ? '@' + mockTelegramStatus.bot_username : ''
 })
 </script>
 
@@ -121,5 +116,15 @@ onMounted(async () => {
 .status-badge.offline {
   background-color: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 1.4rem; }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }
 </style>

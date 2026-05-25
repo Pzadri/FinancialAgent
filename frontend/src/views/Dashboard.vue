@@ -232,8 +232,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
-import axios from 'axios'
 import { formatMoney, formatNumber, formatPct } from '../utils/format.js'
+import { mockCreditos, mockDeudas, mockGIRecords, mockInversiones, mockGBM } from '../data/mockData.js'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -248,7 +248,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
-// Reactive data from APIs
+// Reactive data
 const creditCards = ref([])
 const totalCreditDebt = ref(0)
 const totalCreditAvailable = ref(0)
@@ -275,7 +275,6 @@ const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + gb
 const patrimony = computed(() => totalPortfolio.value - totalCreditDebt.value)
 const savingsRate = computed(() => monthlyIncome.value > 0 ? Math.round(((monthlyIncome.value - monthlyExpenses.value) / monthlyIncome.value) * 100) : 0)
 
-// Variación vs mes anterior (%)
 const incomeVsPrev = computed(() => {
   if (!prevMonthIncome.value) return null
   return Math.round(((monthlyIncome.value - prevMonthIncome.value) / prevMonthIncome.value) * 100)
@@ -285,7 +284,6 @@ const expensesVsPrev = computed(() => {
   return Math.round(((monthlyExpenses.value - prevMonthExpenses.value) / prevMonthExpenses.value) * 100)
 })
 
-// Cuentas de ahorro por nombre (dinámico desde API)
 const liquidezAccounts = computed(() => savingsAccounts.value.filter(a =>
   a.name === 'Revolut' || a.name === 'Cajita Nu'
 ))
@@ -294,7 +292,6 @@ const liquidezRate = computed(() => {
   if (!liquidezAccounts.value.length) return 0
   const total = liquidezAccounts.value.reduce((s, a) => s + a.balance, 0)
   if (!total) return 0
-  // Promedio ponderado por saldo
   return liquidezAccounts.value.reduce((s, a) => s + a.annualRate * (a.balance / total), 0)
 })
 
@@ -302,95 +299,77 @@ const didiAccount = computed(() => savingsAccounts.value.find(a => a.name === 'D
 const didiBalance = computed(() => didiAccount.value ? didiAccount.value.balance : 0)
 const didiRate = computed(() => didiAccount.value ? didiAccount.value.annualRate : 0)
 
-// Chart data
 const lineChartData = ref({ labels: [], datasets: [] })
 
-onMounted(async () => {
-  try {
-    const [gbmRes, creditRes, invRes, giRes, deudasRes] = await Promise.all([
-      axios.get('/api/gbm/portfolio'),
-      axios.get('/api/creditos'),
-      axios.get('/api/inversiones'),
-      axios.get('/api/gi/records'),
-      axios.get('/api/deudas')
-    ])
+onMounted(() => {
+  // GBM
+  gbmTotal.value = mockGBM.summary.totalValueMXN
+  gbmReturnPct.value = mockGBM.summary.totalReturnPct
 
-    // GBM
-    gbmTotal.value = gbmRes.data.summary.totalValueMXN
-    gbmReturnPct.value = gbmRes.data.summary.totalReturnPct
+  // Créditos
+  const cards = mockCreditos.cards
+  creditCards.value = cards.map(c => ({
+    name: c.name,
+    color: c.color,
+    debt: c.debt,
+    limit: c.creditLimit,
+    usage: c.usagePercent
+  }))
+  totalCreditDebt.value = mockCreditos.summary.totalDebt
+  totalCreditAvailable.value = mockCreditos.summary.totalAvailable
 
-    // Créditos
-    const cards = creditRes.data.cards
-    creditCards.value = cards.map(c => ({
+  upcomingPayments.value = cards
+    .filter(c => c.paymentDate)
+    .sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
+    .map(c => ({
       name: c.name,
       color: c.color,
-      debt: c.debt,
-      limit: c.creditLimit,
-      usage: c.usagePercent
-    }))
-    totalCreditDebt.value = creditRes.data.summary.totalDebt
-    totalCreditAvailable.value = creditRes.data.summary.totalAvailable
-
-    upcomingPayments.value = cards
-      .filter(c => c.paymentDate)
-      .sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
-      .map(c => ({
-        name: c.name,
-        color: c.color,
-        date: formatPaymentDate(c.paymentDate),
-        amount: c.fullPayment,
-        daysLeft: c.daysUntilPayment
-      }))
-
-    // Inversiones
-    const inv = invRes.data
-    totalSavings.value = inv.summary.totalSavings
-    totalLoans.value = inv.summary.totalLoans
-    afore.value = inv.afore.balance || 0
-    aforeRate.value = inv.afore.annualReturn || 0
-    savingsAccounts.value = inv.ahorro
-
-    // Daily earnings from savings (Revolut + Nu)
-    const revolut = inv.ahorro.find(a => a.name === 'Revolut')
-    const nu = inv.ahorro.find(a => a.name === 'Cajita Nu')
-    dailyEarnings.value = (revolut ? revolut.dailyGain : 0) + (nu ? nu.dailyGain : 0)
-
-    // GI Records
-    const records = giRes.data.records || []
-
-    // Recent transactions (last 5)
-    recentTransactions.value = records.slice(0, 5).map(r => ({
-      id: r.id,
-      description: r.description,
-      category: r.category,
-      date: formatShortDate(r.date),
-      amount: r.amount
+      date: formatPaymentDate(c.paymentDate),
+      amount: c.fullPayment,
+      daysLeft: c.daysUntilPayment
     }))
 
-    // Mes actual y mes anterior
-    const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`
+  // Inversiones
+  const inv = mockInversiones
+  totalSavings.value = inv.summary.totalSavings
+  totalLoans.value = inv.summary.totalLoans
+  afore.value = inv.afore.balance || 0
+  aforeRate.value = inv.afore.annualReturn || 0
+  savingsAccounts.value = inv.ahorro
 
-    const thisMonthRecords = records.filter(r => r.date && r.date.startsWith(currentMonth))
-    const prevMonthRecords = records.filter(r => r.date && r.date.startsWith(prevMonth))
+  const revolut = inv.ahorro.find(a => a.name === 'Revolut')
+  const nu = inv.ahorro.find(a => a.name === 'Cajita Nu')
+  dailyEarnings.value = (revolut ? revolut.dailyGain : 0) + (nu ? nu.dailyGain : 0)
 
-    monthlyIncome.value = thisMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
-    monthlyExpenses.value = thisMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
-    prevMonthIncome.value = prevMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
-    prevMonthExpenses.value = prevMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+  // GI Records
+  const records = mockGIRecords.records || []
 
-    // Build line chart: last 6 months income vs expenses
-    buildLineChart(records)
+  recentTransactions.value = records.slice(0, 5).map(r => ({
+    id: r.id,
+    description: r.description,
+    category: r.category,
+    date: formatShortDate(r.date),
+    amount: r.amount
+  }))
 
-    // Deudas
-    deudas.value = deudasRes.data.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
-    totalDeudas.value = deudasRes.data.totalDebt
+  const now = new Date()
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`
 
-  } catch (error) {
-    console.error('Error loading dashboard data:', error)
-  }
+  const thisMonthRecords = records.filter(r => r.date && r.date.startsWith(currentMonth))
+  const prevMonthRecords = records.filter(r => r.date && r.date.startsWith(prevMonth))
+
+  monthlyIncome.value = thisMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
+  monthlyExpenses.value = thisMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+  prevMonthIncome.value = prevMonthRecords.filter(r => r.amount > 0).reduce((s, r) => s + r.amount, 0)
+  prevMonthExpenses.value = prevMonthRecords.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0)
+
+  buildLineChart(records)
+
+  // Deudas
+  deudas.value = mockDeudas.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
+  totalDeudas.value = mockDeudas.totalDebt
 })
 
 function buildLineChart(records) {
@@ -827,8 +806,31 @@ const chartOptions = {
 }
 
 @media (max-width: 768px) {
-  .row-2, .row-3, .row-4 {
+  .page-title { font-size: 1.4rem; }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .row-2, .row-3 {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value { font-size: 1.1rem; }
+
+  .inv-item {
+    flex-wrap: wrap;
+  }
+
+  .inv-rate {
+    margin-left: auto;
+  }
+}
+
 </style>

@@ -165,4 +165,11 @@ INFO:     127.0.0.1:61707 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63921 - "GET /api/creditos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63531 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:60262 - "GET /api/gi/records HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [8672] using StatReload
+INFO:     Started server process [9764]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54049 - "GET /api/health HTTP/1.1" 200 OK
 ^C

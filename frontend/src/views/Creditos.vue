@@ -142,9 +142,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import PaymentCountdown from '../components/PaymentCountdown.vue'
 import { formatMoney } from '../utils/format.js'
+import { mockCreditos } from '../data/mockData.js'
 
 const cards = ref([])
 const totalCredit = ref(0)
@@ -153,18 +153,13 @@ const totalAvailable = ref(0)
 const totalPayment = ref(0)
 const usagePercent = ref(0)
 
-onMounted(async () => {
-  try {
-    const response = await axios.get('/api/creditos')
-    cards.value = response.data.cards
-    totalCredit.value = response.data.summary.totalCredit
-    totalDebt.value = response.data.summary.totalDebt
-    totalAvailable.value = response.data.summary.totalAvailable
-    totalPayment.value = response.data.summary.totalPayment
-    usagePercent.value = response.data.summary.usagePercent
-  } catch (error) {
-    console.error('Error loading credit data:', error)
-  }
+onMounted(() => {
+  cards.value = mockCreditos.cards
+  totalCredit.value = mockCreditos.summary.totalCredit
+  totalDebt.value = mockCreditos.summary.totalDebt
+  totalAvailable.value = mockCreditos.summary.totalAvailable
+  totalPayment.value = mockCreditos.summary.totalPayment
+  usagePercent.value = mockCreditos.summary.usagePercent
 })
 
 function formatDate(dateStr) {
@@ -453,12 +448,42 @@ function getUsageClass(percent) {
 }
 
 @media (max-width: 768px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
+  .page-title { font-size: 1.4rem; }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
+  .charts-grid,
   .cards-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Tabla: ocultar columnas menos importantes */
+  .data-table th:nth-child(6),
+  .data-table td:nth-child(6) {
+    display: none;
+  }
 }
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tabla: ocultar más columnas en pantallas muy pequeñas */
+  .data-table th:nth-child(5),
+  .data-table td:nth-child(5),
+  .data-table th:nth-child(7),
+  .data-table td:nth-child(7) {
+    display: none;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
 </style>

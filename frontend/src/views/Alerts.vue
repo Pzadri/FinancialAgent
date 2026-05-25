@@ -31,35 +31,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { mockTelegramStatus } from '../data/mockData.js'
 
 const message = ref('')
 const messageType = ref('')
 
 const alerts = ref([
-  { id: 1, text: 'Gasto elevado detectado: $120,000 en Vivienda', time: 'Hace 2 horas', status: 'enviado' },
-  { id: 2, text: 'Balance mensual actualizado: +$130,000', time: 'Hace 1 día', status: 'enviado' },
-  { id: 3, text: 'Nuevo ingreso registrado: $80,000', time: 'Hace 3 días', status: 'enviado' }
+  { id: 1, text: 'Gasto elevado detectado: $9,500 en Vivienda', time: 'Hace 2 horas', status: 'enviado' },
+  { id: 2, text: 'Balance mensual actualizado: +$30,700', time: 'Hace 1 día', status: 'enviado' },
+  { id: 3, text: 'Nuevo ingreso registrado: $22,500', time: 'Hace 3 días', status: 'enviado' }
 ])
 
-async function sendTestAlert() {
-  try {
-    const response = await axios.post('/api/telegram/send', {
-      message: '🔔 Alerta de prueba desde Financial Dashboard\n\n💰 Balance: $1,250,000\n📈 Ingresos del mes: $450,000\n📉 Gastos del mes: $320,000'
-    })
-    message.value = '✅ Alerta enviada exitosamente a Telegram'
-    messageType.value = 'success'
-    alerts.value.unshift({
-      id: Date.now(),
-      text: 'Alerta de prueba enviada',
-      time: 'Ahora',
-      status: 'enviado'
-    })
-  } catch (error) {
-    message.value = '❌ Error al enviar alerta: ' + (error.response?.data?.detail || error.message)
-    messageType.value = 'error'
-  }
+function sendTestAlert() {
+  message.value = '✅ Alerta enviada exitosamente a Telegram'
+  messageType.value = 'success'
+  alerts.value.unshift({
+    id: Date.now(),
+    text: 'Alerta de prueba enviada',
+    time: 'Ahora',
+    status: 'enviado'
+  })
+  setTimeout(() => { message.value = '' }, 3000)
 }
 </script>
 
@@ -181,5 +174,17 @@ async function sendTestAlert() {
 .alert-status.enviado {
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 1.4rem; }
+
+  .alert-item {
+    flex-wrap: wrap;
+  }
+
+  .alert-status {
+    margin-left: auto;
+  }
 }
 </style>

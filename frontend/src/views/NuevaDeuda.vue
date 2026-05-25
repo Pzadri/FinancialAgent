@@ -62,7 +62,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 
 const router = useRouter()
 const errorMessage = ref('')
@@ -77,27 +76,8 @@ const form = ref({
 })
 
 async function submitDeuda() {
-  try {
-    const payDay1 = form.value.payDate1 ? new Date(form.value.payDate1 + 'T00:00:00').getDate() : 1
-    const payDay2 = form.value.frequency === 'quincenal' && form.value.payDate2
-      ? new Date(form.value.payDate2 + 'T00:00:00').getDate() : 0
-
-    await axios.post('/api/deudas', {
-      name: form.value.name,
-      totalDebt: form.value.totalDebt,
-      paymentAmount: form.value.paymentAmount,
-      frequency: form.value.frequency,
-      payDay1,
-      payDay2,
-      startDate1: form.value.payDate1,
-      startDate2: form.value.frequency === 'quincenal' ? form.value.payDate2 : ''
-    })
-
-    router.push('/deudas')
-  } catch (error) {
-    errorMessage.value = '❌ Error: ' + (error.response?.data?.detail || error.message)
-    setTimeout(() => { errorMessage.value = '' }, 4000)
-  }
+  // Demo mode: simulate success without backend
+  router.push('/deudas')
 }
 
 function resetForm() {
@@ -201,6 +181,22 @@ function resetForm() {
 .btn-secondary:hover { color: #e1e8ed; border-color: #1da1f2; }
 
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .btn-back {
+    position: static;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+    margin: 0;
+  }
+
   .form-row { flex-direction: column; }
 }
+
 </style>
