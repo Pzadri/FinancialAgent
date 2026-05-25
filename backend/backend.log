@@ -165,4 +165,183 @@ INFO:     127.0.0.1:61707 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63921 - "GET /api/creditos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63531 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:60262 - "GET /api/gi/records HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [4656] using StatReload
+INFO:     Started server process [7108]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:52144 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49841 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49845 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49847 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49843 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61081 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17980] using StatReload
+INFO:     Started server process [19156]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51038 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62574 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62577 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62578 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62572 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62573 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62566 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56181 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57678 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55523 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58351 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58352 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58353 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58355 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61750 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52568 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64484 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61978 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:54358 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59318 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58830 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57940 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58829 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57939 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57867 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56024 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56026 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56025 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56027 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49166 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:57940 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53347 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55864 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49565 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49569 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49567 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55862 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60914 - "POST /api/inversiones/mark-updated HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54272 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52989 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53044 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64857 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49447 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60189 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60193 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60192 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49550 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51249 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:62688 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51879 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60594 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63427 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63993 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56843 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52593 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60435 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50728 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50293 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55488 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52627 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50543 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56994 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49743 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49210 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63188 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60816 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62469 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62681 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57510 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62467 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60848 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58322 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62679 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58525 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59631 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55895 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:62218 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52476 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57764 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52258 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64462 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49960 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:57747 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63425 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60564 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56373 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55886 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51523 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50293 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55092 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52931 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64600 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53219 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50228 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59063 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60248 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60249 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60251 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50417 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57329 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57327 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57328 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50746 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52842 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [6444] using StatReload
+INFO:     Started server process [9276]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50881 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63806 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63811 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63807 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63813 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63803 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58179 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61315 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54015 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54013 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54014 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58826 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53482 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49931 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:54800 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51653 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53169 - "POST /api/gbm/upload HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:50520 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60463 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53717 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51043 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49245 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51458 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55895 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15228] using StatReload
+INFO:     Started server process [8184]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50503 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52350 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52348 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52346 - "GET /api/creditos HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:52344 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52352 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52342 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51300 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51301 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51305 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51303 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58296 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59495 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
 ^C

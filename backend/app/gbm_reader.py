@@ -4,6 +4,32 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).parent.parent.parent / "data" / "gbm"
 
+
+def _parse_num(value) -> float:
+    """Convierte un valor a float, manejando strings con formato de moneda/porcentaje.
+    Ejemplos: '$23.20' -> 23.20, '-$0.92' -> -0.92, '2.02%' -> 2.02, '-' -> 0
+    """
+    if value is None or value == "-":
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    # Es string con formato
+    s = str(value).strip()
+    if s in ("-", "", "N/A"):
+        return 0.0
+    # Detectar signo negativo antes del símbolo de moneda: -$1.23
+    negative = False
+    if s.startswith("-"):
+        negative = True
+        s = s[1:]
+    # Quitar símbolos de moneda y porcentaje
+    s = s.replace("$", "").replace("%", "").replace(",", "").strip()
+    try:
+        result = float(s)
+        return -result if negative else result
+    except (ValueError, TypeError):
+        return 0.0
+
 # Tipo de cambio USD/MXN por defecto (fallback si falla la consulta)
 _USD_MXN_FALLBACK = 19.45
 
@@ -51,18 +77,18 @@ def read_nacional() -> list[dict]:
             continue
 
         # Skip cash entries with 0 value
-        if cell0.startswith("EFEC.") and (row[5] is None or row[5] == 0):
+        if cell0.startswith("EFEC.") and _parse_num(row[5]) == 0:
             continue
 
         try:
             ticker = cell0
-            shares = float(row[1]) if row[1] and row[1] != "-" else 0
-            avg_cost = float(row[2]) if row[2] and row[2] != "-" else 0
-            market_price = float(row[3]) if row[3] and row[3] != "-" else 0
-            market_value = float(row[5]) if row[5] and row[5] != "-" else 0
-            gain_loss = float(row[6]) if row[6] and row[6] != "-" else 0
-            var_day_pct = float(row[8]) if row[8] and row[8] != "-" else 0
-            portfolio_pct = float(row[10]) if row[10] and row[10] != "-" else 0
+            shares = _parse_num(row[1])
+            avg_cost = _parse_num(row[2])
+            market_price = _parse_num(row[3])
+            market_value = _parse_num(row[5])
+            gain_loss = _parse_num(row[6])
+            var_day_pct = _parse_num(row[8])
+            portfolio_pct = _parse_num(row[10])
 
             # Calculate return percentage
             if avg_cost > 0 and shares > 0:
@@ -117,20 +143,20 @@ def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
         if cell0 in ("Emisora/Fondo", "App GBM Portfolio"):
             continue
 
-        if cell0 == "efectivo" and (row[5] is None or row[5] == 0):
+        if cell0 == "efectivo" and _parse_num(row[5]) == 0:
             continue
 
         try:
             ticker = cell0
-            shares = float(row[1]) if row[1] and row[1] != "-" else 0
-            avg_cost = float(row[2]) if row[2] and row[2] != "-" else 0
-            market_price = float(row[3]) if row[3] and row[3] != "-" else 0
-            market_value = float(row[5]) if row[5] and row[5] != "-" else 0
-            gain_loss = float(row[6]) if row[6] and row[6] != "-" else 0
-            var_hist_pct = float(row[7]) if row[7] and row[7] != "-" else 0
-            var_day_pct = float(row[8]) if row[8] and row[8] != "-" else 0
-            cost_value = float(row[9]) if row[9] and row[9] != "-" else 0
-            portfolio_pct = float(row[10]) if row[10] and row[10] != "-" else 0
+            shares = _parse_num(row[1])
+            avg_cost = _parse_num(row[2])
+            market_price = _parse_num(row[3])
+            market_value = _parse_num(row[5])
+            gain_loss = _parse_num(row[6])
+            var_hist_pct = _parse_num(row[7])
+            var_day_pct = _parse_num(row[8])
+            cost_value = _parse_num(row[9])
+            portfolio_pct = _parse_num(row[10])
 
             instruments.append({
                 "ticker": ticker,
