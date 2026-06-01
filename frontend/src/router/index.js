@@ -6,8 +6,7 @@ import GastosIngresos from '../views/GastosIngresos.vue'
 import RegistroGI from '../views/RegistroGI.vue'
 import Deudas from '../views/Deudas.vue'
 import NuevaDeuda from '../views/NuevaDeuda.vue'
-import Alerts from '../views/Alerts.vue'
-import Settings from '../views/Settings.vue'
+import Aportaciones from '../views/Aportaciones.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard, meta: { icon: 'pi pi-home', label: 'Dashboard' } },
@@ -17,8 +16,7 @@ const routes = [
   { path: '/gastos-ingresos/registro', name: 'RegistroGI', component: RegistroGI },
   { path: '/deudas', name: 'Deudas', component: Deudas, meta: { icon: 'pi pi-money-bill', label: 'Deudas' } },
   { path: '/deudas/nuevo', name: 'NuevaDeuda', component: NuevaDeuda },
-  { path: '/alerts', name: 'Alerts', component: Alerts, meta: { icon: 'pi pi-bell', label: 'Alertas' } },
-  { path: '/settings', name: 'Settings', component: Settings, meta: { icon: 'pi pi-cog', label: 'Configuración' } }
+  { path: '/aportaciones', name: 'Aportaciones', component: Aportaciones, meta: { icon: 'pi pi-calendar', label: 'Aportaciones' } }
 ]
 
 const router = createRouter({

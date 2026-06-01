@@ -464,12 +464,66 @@ function clearFilters() {
 }
 
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-register {
+    width: 100%;
+    justify-content: center;
+  }
+
   .filters-bar {
     flex-direction: column;
+    gap: 10px;
+  }
+
+  .filter-group {
+    width: 100%;
   }
 
   .filter-input {
-    min-width: 100%;
+    width: 100%;
+    min-width: unset;
+  }
+
+  .btn-clear {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .summary-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .summary-item {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) {
+    display: none;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 8px;
+    font-size: 0.75rem;
   }
 }
 </style>
