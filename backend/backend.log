@@ -344,4 +344,339 @@ INFO:     127.0.0.1:51305 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51303 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58296 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:59495 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10592] using StatReload
+INFO:     Started server process [18124]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51961 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60135 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60137 - "GET /api/gi/records HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:60131 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60139 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60133 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60129 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58984 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50944 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56616 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50588 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56882 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49366 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49191 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49190 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49193 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61928 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [3380] using StatReload
+INFO:     Started server process [18000]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59306 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56758 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60812 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59521 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59523 - "GET /api/inversiones HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:59519 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59517 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49521 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50661 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50659 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60142 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55107 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59148 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60720 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59911 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61009 - "GET /api/inversiones HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10284] using StatReload
+INFO:     Started server process [6612]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:49743 - "GET /api/health HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:50516 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50518 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50517 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50520 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50515 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:65371 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51575 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60987 - "POST /api/creditos/update-card HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49571 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59806 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62580 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56011 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64716 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49547 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64405 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:54901 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54902 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51326 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51327 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51328 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51330 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55603 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:54956 - "POST /api/inversiones/update-balances HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49346 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53037 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62643 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:54401 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63545 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63547 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63544 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61269 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59405 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59407 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59642 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49696 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59020 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59022 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59023 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59021 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56281 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56282 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56283 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56284 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62799 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [8512] using StatReload
+INFO:     Started server process [10172]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50729 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51962 - "GET /api/deudas HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:55130 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51961 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55132 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57610 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59161 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50337 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62375 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:57415 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50676 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50872 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49522 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59795 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:63655 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52645 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15216] using StatReload
+INFO:     Started server process [6348]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60663 - "GET /api/health HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:50129 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50127 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60551 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53366 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53367 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53369 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54789 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [1552] using StatReload
+INFO:     Started server process [15692]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54603 - "GET /api/health HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:55617 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55615 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64562 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63089 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64997 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51110 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62398 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52064 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65302 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10284] using StatReload
+INFO:     Started server process [8264]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:63434 - "GET /api/health HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:64454 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57139 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49964 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61132 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61134 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58450 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50580 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64735 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64171 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56523 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49881 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58336 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:50724 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51461 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56820 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52437 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:57061 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57063 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57064 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57065 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57691 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61254 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57929 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61859 - "GET /api/telegram/status HTTP/1.1" 500 Internal Server Error
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [16992] using StatReload
+INFO:     Started server process [17720]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51915 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59389 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50302 - "GET /api/aportaciones?year=2026&month=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50181 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [8880] using StatReload
+INFO:     Started server process [14136]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60351 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51263 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49551 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57503 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52618 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60642 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54233 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60877 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59258 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60787 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60788 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60790 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59129 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59131 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56280 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63934 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63935 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57633 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65234 - "GET /api/aportaciones?year=2026&month=5 HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [4236] using StatReload
+INFO:     Started server process [18284]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:55571 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61622 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62800 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50567 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53509 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64468 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59494 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55590 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56767 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/aportaciones?year=2026&month=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64691 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60680 - "GET /api/aportaciones?year=2026&month=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64271 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49918 - "GET /api/aportaciones?year=2026&month=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49721 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50167 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51053 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62108 - "GET /api/deudas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63594 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57016 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57018 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59294 - "POST /api/creditos/update-card HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49652 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62762 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60733 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54810 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54803 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54804 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54808 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54807 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58779 - "GET /api/dashboard HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [9752] using StatReload
+INFO:     Started server process [9908]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57149 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55595 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59913 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57323 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53795 - "POST /api/aportaciones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60865 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57885 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53237 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53277 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54044 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55652 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55653 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55654 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55656 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55655 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60393 - "POST /api/inversiones/update-balances HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58736 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60997 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49492 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63776 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57844 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57848 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57852 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60819 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63156 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51050 - "GET /api/dashboard HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [16708] using StatReload
+INFO:     Started server process [3764]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61722 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49874 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52369 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52372 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52373 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52377 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52378 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52379 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65269 - "POST /api/inversiones/afore/update-data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64072 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59017 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+C:\Users\Adria\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\header_footer.py:48: UserWarning: Cannot parse header or footer so it will be ignored
+  warn("""Cannot parse header or footer so it will be ignored""")
+INFO:     127.0.0.1:53818 - "POST /api/gbm/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53031 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58510 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52079 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50894 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51278 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49870 - "GET /api/dashboard HTTP/1.1" 200 OK
 ^C

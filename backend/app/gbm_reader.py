@@ -1,28 +1,26 @@
-"""Module to read GBM portfolio Excel files and return structured data."""
+"""Module to read GBM portfolio data from SQLite, with Excel upload support."""
 import openpyxl
-from pathlib import Path
+from io import BytesIO
+from app.database import get_db
+from app import cache
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data" / "gbm"
+# Tipo de cambio USD/MXN por defecto (fallback si falla la consulta)
+_USD_MXN_FALLBACK = 19.45
 
 
 def _parse_num(value) -> float:
-    """Convierte un valor a float, manejando strings con formato de moneda/porcentaje.
-    Ejemplos: '$23.20' -> 23.20, '-$0.92' -> -0.92, '2.02%' -> 2.02, '-' -> 0
-    """
+    """Convierte un valor a float, manejando strings con formato de moneda/porcentaje."""
     if value is None or value == "-":
         return 0.0
     if isinstance(value, (int, float)):
         return float(value)
-    # Es string con formato
     s = str(value).strip()
     if s in ("-", "", "N/A"):
         return 0.0
-    # Detectar signo negativo antes del símbolo de moneda: -$1.23
     negative = False
     if s.startswith("-"):
         negative = True
         s = s[1:]
-    # Quitar símbolos de moneda y porcentaje
     s = s.replace("$", "").replace("%", "").replace(",", "").strip()
     try:
         result = float(s)
@@ -30,32 +28,29 @@ def _parse_num(value) -> float:
     except (ValueError, TypeError):
         return 0.0
 
-# Tipo de cambio USD/MXN por defecto (fallback si falla la consulta)
-_USD_MXN_FALLBACK = 19.45
-
 
 def fetch_usd_mxn() -> float:
-    """Obtiene el tipo de cambio USD/MXN en tiempo real.
-    Usa httpx (ya instalado) para evitar bloqueos por User-Agent.
-    Si falla, regresa el valor de fallback."""
+    """Obtiene el tipo de cambio USD/MXN en tiempo real con caché de 10 minutos."""
+    cached = cache.get("usd_mxn_rate")
+    if cached is not None:
+        return cached
+
     try:
         import httpx
         url = "https://api.frankfurter.app/latest?base=USD&symbols=MXN"
         resp = httpx.get(url, timeout=5, follow_redirects=True)
         resp.raise_for_status()
         data = resp.json()
-        return round(float(data["rates"]["MXN"]), 4)
+        rate = round(float(data["rates"]["MXN"]), 4)
+        cache.set("usd_mxn_rate", rate, ttl_seconds=600)
+        return rate
     except Exception:
         return _USD_MXN_FALLBACK
 
 
-def read_nacional() -> list[dict]:
-    """Read national market portfolio from Excel."""
-    filepath = DATA_DIR / "portafolio-nacional.xlsx"
-    if not filepath.exists():
-        return []
-
-    wb = openpyxl.load_workbook(filepath, read_only=True)
+def parse_nacional_excel(content: bytes) -> list[dict]:
+    """Parse national market portfolio from Excel bytes."""
+    wb = openpyxl.load_workbook(BytesIO(content), read_only=True)
     ws = wb.active
 
     instruments = []
@@ -67,16 +62,13 @@ def read_nacional() -> list[dict]:
 
         cell0 = str(row[0]).strip()
 
-        # Detect section headers
         if cell0 in ("Mercado de Capitales Nacional", "Fondos de Inversión Deuda", "Efectivo"):
             current_section = cell0
             continue
 
-        # Skip header rows and title
         if cell0 in ("Emisora/Fondo", "App GBM Portfolio"):
             continue
 
-        # Skip cash entries with 0 value
         if cell0.startswith("EFEC.") and _parse_num(row[5]) == 0:
             continue
 
@@ -90,7 +82,6 @@ def read_nacional() -> list[dict]:
             var_day_pct = _parse_num(row[8])
             portfolio_pct = _parse_num(row[10])
 
-            # Calculate return percentage
             if avg_cost > 0 and shares > 0:
                 total_cost = avg_cost * shares
                 return_pct = ((market_value - total_cost) / total_cost) * 100
@@ -100,8 +91,6 @@ def read_nacional() -> list[dict]:
             instruments.append({
                 "ticker": ticker,
                 "section": current_section,
-                "market": "Nacional",
-                "currency": "MXN",
                 "shares": shares,
                 "avgCost": avg_cost,
                 "marketPrice": market_price,
@@ -118,13 +107,9 @@ def read_nacional() -> list[dict]:
     return instruments
 
 
-def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
-    """Read USA market portfolio from Excel."""
-    filepath = DATA_DIR / "portafolio-usa.xlsx"
-    if not filepath.exists():
-        return []
-
-    wb = openpyxl.load_workbook(filepath, read_only=True)
+def parse_usa_excel(content: bytes) -> list[dict]:
+    """Parse USA market portfolio from Excel bytes."""
+    wb = openpyxl.load_workbook(BytesIO(content), read_only=True)
     ws = wb.active
 
     instruments = []
@@ -153,7 +138,6 @@ def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
             market_price = _parse_num(row[3])
             market_value = _parse_num(row[5])
             gain_loss = _parse_num(row[6])
-            var_hist_pct = _parse_num(row[7])
             var_day_pct = _parse_num(row[8])
             cost_value = _parse_num(row[9])
             portfolio_pct = _parse_num(row[10])
@@ -161,13 +145,10 @@ def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
             instruments.append({
                 "ticker": ticker,
                 "section": current_section,
-                "market": "USA",
-                "currency": "USD",
                 "shares": shares,
                 "avgCost": avg_cost,
                 "marketPrice": market_price,
                 "marketValue": market_value,
-                "marketValueMXN": round(market_value * usd_mxn, 2),
                 "gainLoss": gain_loss,
                 "returnPct": round(((market_price - avg_cost) / avg_cost) * 100, 2) if avg_cost > 0 else 0,
                 "varDayPct": var_day_pct,
@@ -181,25 +162,92 @@ def read_usa(usd_mxn: float = _USD_MXN_FALLBACK) -> list[dict]:
     return instruments
 
 
+def save_gbm_data(nacional: list[dict], usa: list[dict]):
+    """Replace all GBM data in SQLite with new parsed data."""
+    with get_db() as conn:
+        # Clear old data
+        conn.execute("DELETE FROM gbm_nacional")
+        conn.execute("DELETE FROM gbm_usa")
+
+        # Insert nacional
+        for inv in nacional:
+            conn.execute(
+                """INSERT INTO gbm_nacional (ticker, section, shares, avg_cost, market_price, market_value, gain_loss, return_pct, var_day_pct, portfolio_pct)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (inv["ticker"], inv["section"], inv["shares"], inv["avgCost"], inv["marketPrice"],
+                 inv["marketValue"], inv["gainLoss"], inv["returnPct"], inv["varDayPct"], inv["portfolioPct"])
+            )
+
+        # Insert usa
+        for inv in usa:
+            conn.execute(
+                """INSERT INTO gbm_usa (ticker, section, shares, avg_cost, market_price, market_value, gain_loss, return_pct, var_day_pct, cost_value, portfolio_pct)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (inv["ticker"], inv["section"], inv["shares"], inv["avgCost"], inv["marketPrice"],
+                 inv["marketValue"], inv["gainLoss"], inv["returnPct"], inv["varDayPct"],
+                 inv.get("costValue", 0), inv["portfolioPct"])
+            )
+
+    cache.invalidate("gbm_portfolio")
+
+
 def get_full_portfolio() -> dict:
-    """Get complete portfolio data with summaries."""
-    # Obtener tipo de cambio en tiempo real
+    """Get complete portfolio data from SQLite with summaries. Cached for 5 minutes."""
+    cached = cache.get("gbm_portfolio")
+    if cached is not None:
+        return cached
+
     USD_MXN = fetch_usd_mxn()
 
-    nacional = read_nacional()
-    usa = read_usa(USD_MXN)
+    with get_db() as conn:
+        nac_rows = conn.execute("SELECT * FROM gbm_nacional").fetchall()
+        usa_rows = conn.execute("SELECT * FROM gbm_usa").fetchall()
+
+    nacional = []
+    for row in nac_rows:
+        nacional.append({
+            "ticker": row["ticker"],
+            "section": row["section"],
+            "market": "Nacional",
+            "currency": "MXN",
+            "shares": row["shares"],
+            "avgCost": row["avg_cost"],
+            "marketPrice": row["market_price"],
+            "marketValue": row["market_value"],
+            "gainLoss": row["gain_loss"],
+            "returnPct": row["return_pct"],
+            "varDayPct": row["var_day_pct"],
+            "portfolioPct": row["portfolio_pct"]
+        })
+
+    usa = []
+    for row in usa_rows:
+        market_value = row["market_value"]
+        usa.append({
+            "ticker": row["ticker"],
+            "section": row["section"],
+            "market": "USA",
+            "currency": "USD",
+            "shares": row["shares"],
+            "avgCost": row["avg_cost"],
+            "marketPrice": row["market_price"],
+            "marketValue": market_value,
+            "marketValueMXN": round(market_value * USD_MXN, 2),
+            "gainLoss": row["gain_loss"],
+            "returnPct": row["return_pct"],
+            "varDayPct": row["var_day_pct"],
+            "costValue": row["cost_value"],
+            "portfolioPct": row["portfolio_pct"]
+        })
 
     # Calculate totals
     nacional_value = sum(i["marketValue"] for i in nacional)
     usa_value_usd = sum(i["marketValue"] for i in usa)
     usa_value_mxn = usa_value_usd * USD_MXN
-
     total_mxn = nacional_value + usa_value_mxn
 
-    # Nacional cost
     nacional_cost = sum(i["avgCost"] * i["shares"] for i in nacional)
-    # USA cost
-    usa_cost = sum(i["costValue"] for i in usa if "costValue" in i and i["costValue"] > 0)
+    usa_cost = sum(i["costValue"] for i in usa if i.get("costValue", 0) > 0)
     if usa_cost == 0:
         usa_cost = sum(i["avgCost"] * i["shares"] for i in usa)
 
@@ -207,7 +255,7 @@ def get_full_portfolio() -> dict:
     total_gain = total_mxn - total_cost_mxn
     total_return_pct = (total_gain / total_cost_mxn * 100) if total_cost_mxn > 0 else 0
 
-    return {
+    result = {
         "nacional": nacional,
         "usa": usa,
         "summary": {
@@ -220,3 +268,6 @@ def get_full_portfolio() -> dict:
             "usdMxnRate": USD_MXN
         }
     }
+
+    cache.set("gbm_portfolio", result, ttl_seconds=300)
+    return result

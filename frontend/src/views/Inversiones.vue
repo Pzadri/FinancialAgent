@@ -56,27 +56,78 @@
         <div class="update-banner-info">
           <i class="pi pi-refresh"></i>
           <div>
-            <span class="update-banner-title">Datos pendientes de actualizar</span>
+            <span class="update-banner-title">Saldos de ahorro pendientes de actualizar</span>
             <span class="update-banner-sub">
-              Es lunes — recuerda actualizar el Excel de ahorro y hacer click en "Actualizar".
+              Es lunes — ingresa los saldos actuales de tus cuentas.
               <span v-if="updateStatus.lastUpdate">
-                Última actualización: {{ updateStatus.lastUpdate }}
+                Última actualización: {{ formatDate(updateStatus.lastUpdate) }}
                 (hace {{ updateStatus.daysSinceUpdate }} días)
               </span>
               <span v-else>Nunca actualizado.</span>
             </span>
           </div>
         </div>
-        <button class="btn-update" :disabled="updating" @click="markUpdated">
-          <i :class="updating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
-          {{ updating ? 'Guardando...' : 'Marcar como actualizado' }}
+        <button class="btn-update" @click="showAhorroModal = true">
+          <i class="pi pi-pencil"></i> Actualizar saldos
         </button>
       </div>
 
       <!-- Indicador de última actualización (cuando ya está al día) -->
       <div v-else-if="updateStatus.lastUpdate" class="update-ok">
         <i class="pi pi-check-circle"></i>
-        <span>Datos actualizados el {{ updateStatus.lastUpdate }}</span>
+        <span>Datos actualizados el {{ formatDate(updateStatus.lastUpdate) }}</span>
+        <button class="btn-update-sm" @click="showAhorroModal = true">
+          <i class="pi pi-pencil"></i> Editar saldos
+        </button>
+      </div>
+
+      <!-- Modal de actualización de saldos -->
+      <div v-if="showAhorroModal" class="upload-overlay" @click.self="showAhorroModal = false">
+        <div class="upload-modal">
+          <div class="upload-modal-header">
+            <h3><i class="pi pi-wallet"></i> Actualizar Saldos de Ahorro</h3>
+            <button class="btn-close" @click="showAhorroModal = false"><i class="pi pi-times"></i></button>
+          </div>
+
+          <div class="upload-modal-body">
+            <p class="upload-hint">Ingresa el saldo actual de cada cuenta. Los campos vacíos no se modificarán.</p>
+
+            <div v-for="account in savingsAccounts" :key="account.name" class="balance-field">
+              <label>
+                <span class="balance-field-dot" :style="{ backgroundColor: account.color }"></span>
+                {{ account.name }}
+                <span class="balance-field-desc">{{ account.description }}</span>
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="balance-input"
+                  :placeholder="formatMoney(account.balance)"
+                  v-model.number="ahorroBalances[account.name]"
+                />
+              </div>
+            </div>
+
+            <div v-if="ahorroUpdateError" class="upload-error">
+              <i class="pi pi-exclamation-triangle"></i> {{ ahorroUpdateError }}
+            </div>
+          </div>
+
+          <div class="upload-modal-footer">
+            <button class="btn-cancel" @click="showAhorroModal = false">Cancelar</button>
+            <button
+              class="btn-upload-confirm"
+              :disabled="ahorroUpdating || !hasAnyBalance"
+              @click="submitAhorroBalances"
+            >
+              <i :class="ahorroUpdating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+              {{ ahorroUpdating ? 'Guardando...' : 'Guardar saldos' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="savings-cards">
@@ -137,6 +188,81 @@
 
     <!-- SECCIÓN: PRÉSTAMOS -->
     <div v-if="activeTab === 'loans'" class="section-content">
+
+      <!-- Banner de actualización Préstamos (solo día 15 del mes sin actualizar) -->
+      <div v-if="prestamosUpdateStatus.needsUpdate" class="update-banner">
+        <div class="update-banner-info">
+          <i class="pi pi-refresh"></i>
+          <div>
+            <span class="update-banner-title">Préstamos pendientes de actualizar</span>
+            <span class="update-banner-sub">
+              Es día 15 del mes — revisa y actualiza tus préstamos.
+              <span v-if="prestamosUpdateStatus.lastUpdate">
+                Última actualización: {{ formatDate(prestamosUpdateStatus.lastUpdate) }}
+                (hace {{ prestamosUpdateStatus.daysSinceUpdate }} días)
+              </span>
+              <span v-else>Nunca actualizado.</span>
+            </span>
+          </div>
+        </div>
+        <button class="btn-update" @click="showPrestamosModal = true">
+          <i class="pi pi-pencil"></i> Actualizar datos
+        </button>
+      </div>
+
+      <!-- Indicador de última actualización Préstamos -->
+      <div v-else-if="prestamosUpdateStatus.lastUpdate" class="update-ok">
+        <i class="pi pi-check-circle"></i>
+        <span>Préstamos actualizados el {{ formatDate(prestamosUpdateStatus.lastUpdate) }}</span>
+        <button class="btn-update-sm" @click="showPrestamosModal = true">
+          <i class="pi pi-pencil"></i> Editar datos
+        </button>
+      </div>
+
+      <!-- Modal de actualización Préstamos -->
+      <div v-if="showPrestamosModal" class="upload-overlay" @click.self="showPrestamosModal = false">
+        <div class="upload-modal">
+          <div class="upload-modal-header">
+            <h3><i class="pi pi-users"></i> Actualizar Préstamos</h3>
+            <button class="btn-close" @click="showPrestamosModal = false"><i class="pi pi-times"></i></button>
+          </div>
+
+          <div class="upload-modal-body">
+            <p class="upload-hint">Actualiza el capital vigente de cada préstamo. Los campos vacíos no se modificarán.</p>
+
+            <div v-for="loan in loans" :key="loan.id" class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #10b981"></span>
+                {{ loan.borrower }}
+                <span class="balance-field-desc">{{ loan.term }} · {{ loan.rate }}%</span>
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(loan.principal)"
+                  v-model.number="prestamosFormData[loan.id]" />
+              </div>
+            </div>
+
+            <div v-if="prestamosUpdateError" class="upload-error">
+              <i class="pi pi-exclamation-triangle"></i> {{ prestamosUpdateError }}
+            </div>
+          </div>
+
+          <div class="upload-modal-footer">
+            <button class="btn-cancel" @click="showPrestamosModal = false">Cancelar</button>
+            <button
+              class="btn-upload-confirm"
+              :disabled="prestamosUpdating || !hasAnyPrestamoField"
+              @click="submitPrestamosData"
+            >
+              <i :class="prestamosUpdating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+              {{ prestamosUpdating ? 'Guardando...' : 'Guardar datos' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="loans-header-info">
         <h2>Yo Te Presto</h2>
         <p class="section-desc">Préstamos activos con diferentes tasas de retorno</p>
@@ -185,6 +311,116 @@
 
     <!-- SECCIÓN: AFORE -->
     <div v-if="activeTab === 'afore'" class="section-content">
+
+      <!-- Banner de actualización Afore (solo día 1 del mes sin actualizar) -->
+      <div v-if="aforeUpdateStatus.needsUpdate" class="update-banner">
+        <div class="update-banner-info">
+          <i class="pi pi-refresh"></i>
+          <div>
+            <span class="update-banner-title">Afore pendiente de actualizar</span>
+            <span class="update-banner-sub">
+              Es día 1 del mes — revisa y actualiza tu saldo de Afore.
+              <span v-if="aforeUpdateStatus.lastUpdate">
+                Última actualización: {{ formatDate(aforeUpdateStatus.lastUpdate) }}
+                (hace {{ aforeUpdateStatus.daysSinceUpdate }} días)
+              </span>
+              <span v-else>Nunca actualizado.</span>
+            </span>
+          </div>
+        </div>
+        <button class="btn-update" @click="showAforeModal = true">
+          <i class="pi pi-pencil"></i> Actualizar datos
+        </button>
+      </div>
+
+      <!-- Indicador de última actualización Afore -->
+      <div v-else-if="aforeUpdateStatus.lastUpdate" class="update-ok">
+        <i class="pi pi-check-circle"></i>
+        <span>Afore actualizado el {{ formatDate(aforeUpdateStatus.lastUpdate) }}</span>
+      </div>
+
+      <!-- Modal de actualización Afore -->
+      <div v-if="showAforeModal" class="upload-overlay" @click.self="showAforeModal = false">
+        <div class="upload-modal">
+          <div class="upload-modal-header">
+            <h3><i class="pi pi-shield"></i> Actualizar Datos Afore</h3>
+            <button class="btn-close" @click="showAforeModal = false"><i class="pi pi-times"></i></button>
+          </div>
+
+          <div class="upload-modal-body">
+            <p class="upload-hint">Ingresa los datos actuales de tu Afore. Los campos vacíos no se modificarán.</p>
+
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #1da1f2"></span>
+                Saldo Acumulado
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(afore.balance)"
+                  v-model.number="aforeFormData.balance" />
+              </div>
+            </div>
+
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #10b981"></span>
+                Rendimiento Anual (%)
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">%</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="afore.annualReturn"
+                  v-model.number="aforeFormData.annualReturn" />
+              </div>
+            </div>
+
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #f59e0b"></span>
+                Aportación Bimestral
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(afore.bimonthlyContribution)"
+                  v-model.number="aforeFormData.bimonthlyContribution" />
+              </div>
+            </div>
+
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #8b5cf6"></span>
+                Aportación Voluntaria (semanal)
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(afore.voluntaryContribution)"
+                  v-model.number="aforeFormData.voluntaryContribution" />
+              </div>
+            </div>
+
+            <div v-if="aforeUpdateError" class="upload-error">
+              <i class="pi pi-exclamation-triangle"></i> {{ aforeUpdateError }}
+            </div>
+          </div>
+
+          <div class="upload-modal-footer">
+            <button class="btn-cancel" @click="showAforeModal = false">Cancelar</button>
+            <button
+              class="btn-upload-confirm"
+              :disabled="aforeUpdating || !hasAnyAforeField"
+              @click="submitAforeData"
+            >
+              <i :class="aforeUpdating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+              {{ aforeUpdating ? 'Guardando...' : 'Guardar datos' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="afore-card">
         <div class="afore-header">
           <div class="afore-brand"><i class="pi pi-shield"></i></div>
@@ -239,7 +475,7 @@
             <span class="update-banner-sub">
               Es lunes — sube los archivos Excel descargados de la app GBM.
               <span v-if="gbmUpdateStatus.lastUpdate">
-                Última actualización: {{ gbmUpdateStatus.lastUpdate }}
+                Última actualización: {{ formatDate(gbmUpdateStatus.lastUpdate) }}
                 (hace {{ gbmUpdateStatus.daysSinceUpdate }} días)
               </span>
               <span v-else>Nunca actualizado.</span>
@@ -254,7 +490,7 @@
       <!-- Indicador de última actualización GBM -->
       <div v-else-if="gbmUpdateStatus.lastUpdate" class="update-ok">
         <i class="pi pi-check-circle"></i>
-        <span>Portafolio actualizado el {{ gbmUpdateStatus.lastUpdate }}</span>
+        <span>Portafolio actualizado el {{ formatDate(gbmUpdateStatus.lastUpdate) }}</span>
       </div>
 
       <!-- Modal de upload -->
@@ -686,12 +922,96 @@ async function loadInversiones() {
 // ===== ESTADO DE ACTUALIZACIÓN =====
 const updateStatus = ref({ needsUpdate: false, lastUpdate: null, isMonday: false, daysSinceUpdate: null })
 const updating = ref(false)
+const aforeUpdateStatus = ref({ needsUpdate: false, lastUpdate: null, isFirstOfMonth: false, daysSinceUpdate: null })
+const prestamosUpdateStatus = ref({ needsUpdate: false, lastUpdate: null, isFifteenth: false, daysSinceUpdate: null })
 
 async function loadUpdateStatus() {
   try {
     const res = await axios.get('/api/inversiones/update-status')
     updateStatus.value = res.data
   } catch { /* silencioso */ }
+}
+
+async function loadAforeUpdateStatus() {
+  try {
+    const res = await axios.get('/api/inversiones/afore/update-status')
+    aforeUpdateStatus.value = res.data
+  } catch { /* silencioso */ }
+}
+
+async function loadPrestamosUpdateStatus() {
+  try {
+    const res = await axios.get('/api/inversiones/prestamos/update-status')
+    prestamosUpdateStatus.value = res.data
+  } catch { /* silencioso */ }
+}
+
+// ===== MODAL ACTUALIZACIÓN AFORE =====
+const showAforeModal = ref(false)
+const aforeUpdating = ref(false)
+const aforeUpdateError = ref('')
+const aforeFormData = ref({})
+
+const hasAnyAforeField = computed(() =>
+  Object.values(aforeFormData.value).some(v => v !== null && v !== undefined && v !== '')
+)
+
+async function submitAforeData() {
+  aforeUpdating.value = true
+  aforeUpdateError.value = ''
+  try {
+    const fields = {}
+    for (const [key, val] of Object.entries(aforeFormData.value)) {
+      if (val !== null && val !== undefined && val !== '') {
+        fields[key] = parseFloat(val)
+      }
+    }
+    await axios.post('/api/inversiones/afore/update-data', fields)
+    // Recargar datos
+    savingsAccounts.splice(0)
+    await loadInversiones()
+    await loadAforeUpdateStatus()
+    showAforeModal.value = false
+    aforeFormData.value = {}
+  } catch (e) {
+    aforeUpdateError.value = e.response?.data?.detail || 'Error al guardar los datos.'
+  } finally {
+    aforeUpdating.value = false
+  }
+}
+
+// ===== MODAL ACTUALIZACIÓN PRÉSTAMOS =====
+const showPrestamosModal = ref(false)
+const prestamosUpdating = ref(false)
+const prestamosUpdateError = ref('')
+const prestamosFormData = ref({})
+
+const hasAnyPrestamoField = computed(() =>
+  Object.values(prestamosFormData.value).some(v => v !== null && v !== undefined && v !== '')
+)
+
+async function submitPrestamosData() {
+  prestamosUpdating.value = true
+  prestamosUpdateError.value = ''
+  try {
+    const updates = []
+    for (const [id, val] of Object.entries(prestamosFormData.value)) {
+      if (val !== null && val !== undefined && val !== '') {
+        updates.push({ id: parseInt(id), principal: parseFloat(val) })
+      }
+    }
+    await axios.post('/api/inversiones/prestamos/update-data', { updates })
+    // Recargar datos
+    savingsAccounts.splice(0)
+    await loadInversiones()
+    await loadPrestamosUpdateStatus()
+    showPrestamosModal.value = false
+    prestamosFormData.value = {}
+  } catch (e) {
+    prestamosUpdateError.value = e.response?.data?.detail || 'Error al guardar los datos.'
+  } finally {
+    prestamosUpdating.value = false
+  }
 }
 
 async function markUpdated() {
@@ -701,6 +1021,41 @@ async function markUpdated() {
     await loadUpdateStatus()
   } catch { /* silencioso */ } finally {
     updating.value = false
+  }
+}
+
+// ===== MODAL ACTUALIZACIÓN SALDOS AHORRO =====
+const showAhorroModal = ref(false)
+const ahorroUpdating = ref(false)
+const ahorroUpdateError = ref('')
+const ahorroBalances = ref({})
+
+const hasAnyBalance = computed(() =>
+  Object.values(ahorroBalances.value).some(v => v !== null && v !== undefined && v !== '')
+)
+
+async function submitAhorroBalances() {
+  ahorroUpdating.value = true
+  ahorroUpdateError.value = ''
+  try {
+    // Solo enviar cuentas que tienen valor ingresado
+    const balances = {}
+    for (const [name, val] of Object.entries(ahorroBalances.value)) {
+      if (val !== null && val !== undefined && val !== '') {
+        balances[name] = parseFloat(val)
+      }
+    }
+    await axios.post('/api/inversiones/update-balances', { balances })
+    // Recargar datos y estado
+    savingsAccounts.splice(0)
+    await loadInversiones()
+    await loadUpdateStatus()
+    showAhorroModal.value = false
+    ahorroBalances.value = {}
+  } catch (e) {
+    ahorroUpdateError.value = e.response?.data?.detail || 'Error al guardar los saldos.'
+  } finally {
+    ahorroUpdating.value = false
   }
 }
 
@@ -754,6 +1109,8 @@ onMounted(() => {
   loadInversiones()
   loadUpdateStatus()
   loadGbmUpdateStatus()
+  loadAforeUpdateStatus()
+  loadPrestamosUpdateStatus()
 })
 
 const doughnutOptions = {
@@ -791,8 +1148,9 @@ const frozenIncome = computed(() => gbmSummary.value.totalValueMXN + afore.balan
 const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + totalMarket.value)
 
 function formatDate(dateStr) {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+  if (!dateStr) return ''
+  const [y, m, d] = dateStr.split('-')
+  return `${d}-${m}-${y}`
 }
 </script>
 
@@ -1431,4 +1789,83 @@ function formatDate(dateStr) {
 }
 .btn-upload-confirm:hover:not(:disabled) { background-color: #1a91da; }
 .btn-upload-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Botón editar saldos (inline en update-ok) ───────────────────────── */
+.btn-update-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-update-sm:hover { background: rgba(16, 185, 129, 0.1); }
+
+/* ── Campos de saldo en modal de ahorro ──────────────────────────────── */
+.balance-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.balance-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #e1e8ed;
+  font-weight: 600;
+}
+
+.balance-field-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.balance-field-desc {
+  font-size: 0.78rem;
+  color: #8899a6;
+  font-weight: 400;
+}
+
+.balance-input-wrap {
+  display: flex;
+  align-items: center;
+  background-color: #0d1821;
+  border: 1px solid #2d3741;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.balance-input-wrap:focus-within { border-color: #1da1f2; }
+
+.balance-input-prefix {
+  padding: 0 10px;
+  color: #8899a6;
+  font-size: 0.9rem;
+  border-right: 1px solid #2d3741;
+  line-height: 38px;
+}
+
+.balance-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e1e8ed;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+}
+.balance-input::placeholder { color: #4a5568; }
+.balance-input::-webkit-inner-spin-button,
+.balance-input::-webkit-outer-spin-button { opacity: 0.4; }
 </style>

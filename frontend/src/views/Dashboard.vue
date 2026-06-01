@@ -118,6 +118,16 @@
             </div>
             <span class="inv-rate income">{{ formatPct(didiRate, 1) }}% anual</span>
           </div>
+          <div class="inv-item" v-if="totalLoans > 0">
+            <div class="inv-icon" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <i class="pi pi-money-bill"></i>
+            </div>
+            <div class="inv-info">
+              <span class="inv-name">Préstamos (Yo Te Presto)</span>
+              <span class="inv-amount">${{ formatMoney(totalLoans) }}</span>
+            </div>
+            <span class="inv-rate income">Activos</span>
+          </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
               <i class="pi pi-chart-line"></i>
@@ -126,7 +136,7 @@
               <span class="inv-name">GBM (Acciones + ETFs)</span>
               <span class="inv-amount">${{ formatMoney(gbmTotal) }}</span>
             </div>
-            <span class="inv-rate" :class="gbmReturnPct >= 0 ? 'income' : 'expense'">{{ gbmReturnPct >= 0 ? '+' : '' }}{{ formatMoney(gbmReturnPct, 1) }}%</span>
+            <span class="inv-rate" :class="gbmReturnPct >= 0 ? 'income' : 'expense'">{{ gbmReturnPct >= 0 ? '+' : '' }}{{ formatPct(gbmReturnPct, 1) }}%</span>
           </div>
           <div class="inv-item">
             <div class="inv-icon" style="background-color: rgba(29, 161, 242, 0.15); color: #1da1f2;">
@@ -292,10 +302,8 @@ const liquidezAccounts = computed(() => savingsAccounts.value.filter(a =>
 const liquidez = computed(() => liquidezAccounts.value.reduce((s, a) => s + a.balance, 0))
 const liquidezRate = computed(() => {
   if (!liquidezAccounts.value.length) return 0
-  const total = liquidezAccounts.value.reduce((s, a) => s + a.balance, 0)
-  if (!total) return 0
-  // Promedio ponderado por saldo
-  return liquidezAccounts.value.reduce((s, a) => s + a.annualRate * (a.balance / total), 0)
+  // Promedio simple de las tasas de Revolut y Cajita Nu
+  return liquidezAccounts.value.reduce((s, a) => s + a.annualRate, 0) / liquidezAccounts.value.length
 })
 
 const didiAccount = computed(() => savingsAccounts.value.find(a => a.name === 'Didi'))
@@ -307,20 +315,15 @@ const lineChartData = ref({ labels: [], datasets: [] })
 
 onMounted(async () => {
   try {
-    const [gbmRes, creditRes, invRes, giRes, deudasRes] = await Promise.all([
-      axios.get('/api/gbm/portfolio'),
-      axios.get('/api/creditos'),
-      axios.get('/api/inversiones'),
-      axios.get('/api/gi/records'),
-      axios.get('/api/deudas')
-    ])
+    const res = await axios.get('/api/dashboard')
+    const { gbm: gbmRes, creditos: creditRes, inversiones: invRes, gi: giRes, deudas: deudasRes } = res.data
 
     // GBM
-    gbmTotal.value = gbmRes.data.summary.totalValueMXN
-    gbmReturnPct.value = gbmRes.data.summary.totalReturnPct
+    gbmTotal.value = gbmRes.summary.totalValueMXN
+    gbmReturnPct.value = gbmRes.summary.totalReturnPct
 
     // Créditos
-    const cards = creditRes.data.cards
+    const cards = creditRes.cards
     creditCards.value = cards.map(c => ({
       name: c.name,
       color: c.color,
@@ -328,8 +331,8 @@ onMounted(async () => {
       limit: c.creditLimit,
       usage: c.usagePercent
     }))
-    totalCreditDebt.value = creditRes.data.summary.totalDebt
-    totalCreditAvailable.value = creditRes.data.summary.totalAvailable
+    totalCreditDebt.value = creditRes.summary.totalDebt
+    totalCreditAvailable.value = creditRes.summary.totalAvailable
 
     upcomingPayments.value = cards
       .filter(c => c.paymentDate)
@@ -343,7 +346,7 @@ onMounted(async () => {
       }))
 
     // Inversiones
-    const inv = invRes.data
+    const inv = invRes
     totalSavings.value = inv.summary.totalSavings
     totalLoans.value = inv.summary.totalLoans
     afore.value = inv.afore.balance || 0
@@ -356,7 +359,7 @@ onMounted(async () => {
     dailyEarnings.value = (revolut ? revolut.dailyGain : 0) + (nu ? nu.dailyGain : 0)
 
     // GI Records
-    const records = giRes.data.records || []
+    const records = giRes.records || []
 
     // Recent transactions (last 5)
     recentTransactions.value = records.slice(0, 5).map(r => ({
@@ -385,8 +388,8 @@ onMounted(async () => {
     buildLineChart(records)
 
     // Deudas
-    deudas.value = deudasRes.data.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
-    totalDeudas.value = deudasRes.data.totalDebt
+    deudas.value = deudasRes.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
+    totalDeudas.value = deudasRes.totalDebt
 
   } catch (error) {
     console.error('Error loading dashboard data:', error)

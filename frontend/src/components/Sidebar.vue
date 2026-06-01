@@ -18,47 +18,17 @@
         </router-link>
       </li>
     </ul>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-link">
-        <i class="pi pi-send"></i>
-        <span v-if="isExpanded" class="link-label">
-          Telegram Bot
-          <span class="bot-status-inline">
-            <span class="status-dot" :class="botOnline ? 'online' : 'offline'"></span>
-            <span class="status-text">{{ botOnline ? 'Conectado' : 'Desconectado' }}</span>
-          </span>
-        </span>
-      </div>
-    </div>
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 
 const router = useRouter()
 const isExpanded = ref(false)
-const botOnline = ref(false)
 
 const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
-
-async function checkBotStatus() {
-  try {
-    const res = await axios.get('/api/telegram/status')
-    botOnline.value = res.data.connected === true
-  } catch {
-    botOnline.value = false
-  }
-}
-
-onMounted(() => {
-  checkBotStatus()
-  // Re-verificar cada 60 segundos
-  setInterval(checkBotStatus, 60000)
-})
 </script>
 
 <style scoped>
@@ -140,34 +110,5 @@ onMounted(() => {
 .link-label {
   white-space: nowrap;
   font-size: 0.9rem;
-  display: flex;
-  flex-direction: column;
 }
-
-.sidebar-footer {
-  border-top: 1px solid #2d3741;
-}
-
-.bot-status-inline {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 2px;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-dot.online  { background-color: #10b981; }
-.status-dot.offline { background-color: #ef4444; }
-
-.status-text {
-  font-size: 0.7rem;
-  color: #8899a6;
-}
-
 </style>
