@@ -733,4 +733,48 @@ INFO:     127.0.0.1:53983 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53989 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53987 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53988 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [11536] using StatReload
+INFO:     Started server process [9800]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:62357 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57225 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63123 - "GET /api/creditos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63124 - "GET /api/creditos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60727 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60728 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60729 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60730 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60731 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60732 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56485 - "GET /api/dashboard HTTP/1.1" 200 OK
+^CINFO:     Will watch for changes in these directories: ['c:\\Codigos\\FinancialAgent\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15364] using StatReload
+INFO:     Started server process [10224]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59995 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57284 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64786 - "GET /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52792 - "POST /api/gi/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54415 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54416 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54417 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54418 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54420 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54419 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "POST /api/inversiones/update-balances HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51271 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54771 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54943 - "GET /api/aportaciones?year=2026&month=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51822 - "GET /api/gbm/portfolio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51824 - "GET /api/inversiones/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51825 - "GET /api/gbm/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51823 - "GET /api/inversiones HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51827 - "GET /api/inversiones/prestamos/update-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51826 - "GET /api/inversiones/afore/update-status HTTP/1.1" 200 OK
 ^C
