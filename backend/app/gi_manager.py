@@ -84,3 +84,22 @@ def delete_record(record_id: int) -> bool:
     if deleted:
         cache.invalidate("gi_records")
     return deleted
+
+
+def update_record(record_id: int, fecha: str, descripcion: str, categoria: str, tipo: str, monto: float) -> bool:
+    """Update an existing gasto/ingreso record."""
+    if tipo == "gasto":
+        monto = -abs(monto)
+    else:
+        monto = abs(monto)
+
+    with get_db() as conn:
+        cursor = conn.execute(
+            "UPDATE gastos_ingresos SET fecha = ?, descripcion = ?, categoria = ?, tipo = ?, monto = ? WHERE id = ?",
+            (fecha, descripcion, categoria, tipo, monto, record_id)
+        )
+        updated = cursor.rowcount > 0
+
+    if updated:
+        cache.invalidate("gi_records")
+    return updated

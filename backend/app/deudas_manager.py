@@ -129,7 +129,12 @@ def get_all_deudas() -> list[dict]:
                     "UPDATE deudas SET pagos_restantes = ?, deuda_total = ? WHERE id = ?",
                     (pagos_restantes, deuda_total, row["id"])
                 )
-            cache.invalidate("deudas_all")
+
+            # Auto-delete when fully paid
+            if pagos_restantes <= 0:
+                with get_db() as conn3:
+                    conn3.execute("DELETE FROM deudas WHERE id = ?", (row["id"],))
+                continue
 
         next_payment = calculate_next_payment_date(temporalidad, dia1, dia2, fecha_inicio_1, fecha_inicio_2)
         next_date = date.fromisoformat(next_payment)

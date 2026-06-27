@@ -13,7 +13,18 @@ def get_ahorro() -> list[dict]:
     for row in rows:
         balance = row["balance"]
         annual_rate = row["annual_rate"]
-        daily_gain = (balance * annual_rate / 100) / 365
+        rate_cap = row["rate_cap"] or 0
+        excess_rate = row["excess_rate"] or 0
+        tax_rate = 0.9  # ISR retención diaria anual (%)
+
+        # Tiered rate calculation
+        if rate_cap > 0 and balance > rate_cap:
+            gain_capped = rate_cap * (annual_rate - tax_rate) / 100 / 365
+            gain_excess = (balance - rate_cap) * (excess_rate - tax_rate) / 100 / 365
+            daily_gain = gain_capped + gain_excess
+        else:
+            net_annual_rate = annual_rate - tax_rate
+            daily_gain = (balance * net_annual_rate / 100) / 365
 
         accounts.append({
             "name": row["name"],
@@ -21,6 +32,8 @@ def get_ahorro() -> list[dict]:
             "color": row["color"],
             "balance": balance,
             "annualRate": annual_rate,
+            "rateCap": rate_cap,
+            "excessRate": excess_rate,
             "dailyGain": round(daily_gain, 4)
         })
 
@@ -173,6 +186,37 @@ def update_prestamos_data(prestamos_updates: list[dict]) -> str:
 
     cache.invalidate("inversiones_all")
     return mark_updated("prestamos")
+
+
+def create_prestamo(principal: float, rate: float, term_months: int) -> dict:
+    """Create a new loan and return the computed record."""
+    from app.update_tracker import mark_updated
+
+    term_str = f"{term_months} meses"
+    expected_interest = principal * (rate / 100) * (term_months / 12)
+    total_return = principal + expected_interest
+
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO prestamos (borrower, principal, rate, term, status) VALUES (?, ?, ?, ?, ?)",
+            ("Préstamo", principal, rate, term_str, "activo")
+        )
+        new_id = cursor.lastrowid
+
+    cache.invalidate("inversiones_all")
+    mark_updated("prestamos")
+
+    return {
+        "id": new_id,
+        "borrower": "Préstamo",
+        "principal": principal,
+        "rate": rate,
+        "term": term_str,
+        "expectedInterest": round(expected_interest, 2),
+        "totalReturn": round(total_return, 2),
+        "status": "activo",
+        "statusLabel": "Activo"
+    }
 
 
 def get_all_inversiones() -> dict:

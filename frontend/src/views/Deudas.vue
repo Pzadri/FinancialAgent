@@ -2,9 +2,83 @@
   <div class="deudas">
     <div class="page-header">
       <h1 class="page-title">Deudas</h1>
-      <router-link to="/deudas/nuevo" class="btn-primary">
+      <button class="btn-primary" @click="showNuevaDeudaModal = true">
         <i class="pi pi-plus"></i> Nuevo Préstamo
-      </router-link>
+      </button>
+    </div>
+
+    <!-- Modal Nueva Deuda -->
+    <div v-if="showNuevaDeudaModal" class="modal-overlay" @click.self="showNuevaDeudaModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="pi pi-plus-circle"></i> Nuevo Préstamo</h3>
+          <button class="btn-close" @click="showNuevaDeudaModal = false"><i class="pi pi-times"></i></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-hint">Registra una nueva deuda. Completa todos los campos.</p>
+
+          <div class="modal-field">
+            <label>Nombre del Préstamo</label>
+            <input type="text" v-model="deudaForm.name" class="form-input" placeholder="Ej: Préstamo Banco X" />
+          </div>
+
+          <div class="modal-field-row">
+            <div class="modal-field">
+              <label>Deuda Total</label>
+              <div class="field-input-wrap">
+                <span class="field-prefix">$</span>
+                <input type="number" step="0.01" min="0.01" class="field-input"
+                  placeholder="0.00" v-model.number="deudaForm.totalDebt" />
+              </div>
+            </div>
+            <div class="modal-field">
+              <label>Temporalidad</label>
+              <select v-model="deudaForm.frequency" class="form-input">
+                <option value="">Seleccionar...</option>
+                <option value="mensual">Mensual</option>
+                <option value="quincenal">Quincenal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-field-row">
+            <div class="modal-field">
+              <label>Cantidad a Pagar (por periodo)</label>
+              <div class="field-input-wrap">
+                <span class="field-prefix">$</span>
+                <input type="number" step="0.01" min="0.01" class="field-input"
+                  placeholder="0.00" v-model.number="deudaForm.paymentAmount" />
+              </div>
+            </div>
+            <div class="modal-field">
+              <label>{{ deudaForm.frequency === 'quincenal' ? 'Primera fecha de pago' : 'Fecha de pago' }}</label>
+              <input type="date" v-model="deudaForm.payDate1" class="form-input" />
+            </div>
+          </div>
+
+          <div v-if="deudaForm.frequency === 'quincenal'" class="modal-field">
+            <label>Segunda fecha de pago</label>
+            <input type="date" v-model="deudaForm.payDate2" class="form-input" />
+          </div>
+
+          <div v-if="deudaFormError" class="modal-error">
+            <i class="pi pi-exclamation-triangle"></i> {{ deudaFormError }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showNuevaDeudaModal = false">Cancelar</button>
+          <button
+            class="btn-confirm"
+            :disabled="deudaFormSubmitting || !deudaFormValid"
+            @click="submitNuevaDeuda"
+          >
+            <i :class="deudaFormSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+            {{ deudaFormSubmitting ? 'Registrando...' : 'Registrar' }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Mensaje -->
@@ -92,6 +166,59 @@ const totalDebt = ref(0)
 const message = ref('')
 const messageType = ref('')
 
+// ===== MODAL NUEVA DEUDA =====
+const showNuevaDeudaModal = ref(false)
+const deudaFormSubmitting = ref(false)
+const deudaFormError = ref('')
+const deudaForm = ref({
+  name: '',
+  totalDebt: null,
+  paymentAmount: null,
+  frequency: '',
+  payDate1: '',
+  payDate2: ''
+})
+
+const deudaFormValid = computed(() =>
+  deudaForm.value.name &&
+  deudaForm.value.totalDebt > 0 &&
+  deudaForm.value.paymentAmount > 0 &&
+  deudaForm.value.frequency &&
+  deudaForm.value.payDate1
+)
+
+async function submitNuevaDeuda() {
+  deudaFormSubmitting.value = true
+  deudaFormError.value = ''
+  try {
+    const payDay1 = deudaForm.value.payDate1 ? new Date(deudaForm.value.payDate1 + 'T00:00:00').getDate() : 1
+    const payDay2 = deudaForm.value.frequency === 'quincenal' && deudaForm.value.payDate2
+      ? new Date(deudaForm.value.payDate2 + 'T00:00:00').getDate() : 0
+
+    await axios.post('/api/deudas', {
+      name: deudaForm.value.name,
+      totalDebt: deudaForm.value.totalDebt,
+      paymentAmount: deudaForm.value.paymentAmount,
+      frequency: deudaForm.value.frequency,
+      payDay1,
+      payDay2,
+      startDate1: deudaForm.value.payDate1,
+      startDate2: deudaForm.value.frequency === 'quincenal' ? deudaForm.value.payDate2 : ''
+    })
+
+    showNuevaDeudaModal.value = false
+    deudaForm.value = { name: '', totalDebt: null, paymentAmount: null, frequency: '', payDate1: '', payDate2: '' }
+    message.value = '✅ Préstamo registrado correctamente'
+    messageType.value = 'success'
+    setTimeout(() => { message.value = '' }, 3000)
+    await loadDeudas()
+  } catch (error) {
+    deudaFormError.value = error.response?.data?.detail || error.message
+  } finally {
+    deudaFormSubmitting.value = false
+  }
+}
+
 const nextPaymentInfo = computed(() => {
   if (deudas.value.length === 0) return 'N/A'
   const sorted = [...deudas.value].sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
@@ -147,6 +274,126 @@ function formatDate(dateStr) {
   transition: background-color 0.2s;
 }
 .btn-primary:hover { background-color: #1a91da; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background-color: #15202b;
+  border: 1px solid #2d3741;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #2d3741;
+}
+.modal-header h3 { color: #e1e8ed; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: #8899a6;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.btn-close:hover { color: #e1e8ed; }
+
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-hint { color: #8899a6; font-size: 0.85rem; margin: 0; }
+
+.modal-field { display: flex; flex-direction: column; gap: 6px; }
+.modal-field label { font-size: 0.75rem; text-transform: uppercase; color: #8899a6; font-weight: 600; }
+.modal-field-row { display: flex; gap: 12px; }
+.modal-field-row .modal-field { flex: 1; }
+
+.field-input-wrap {
+  display: flex;
+  align-items: center;
+  background-color: #0d1821;
+  border: 1px solid #2d3741;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.field-input-wrap:focus-within { border-color: #1da1f2; }
+.field-prefix {
+  padding: 0 10px;
+  color: #8899a6;
+  font-size: 0.9rem;
+  border-right: 1px solid #2d3741;
+  line-height: 38px;
+}
+.field-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e1e8ed;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+}
+
+.modal-error {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: 0.85rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #2d3741;
+}
+
+.btn-cancel {
+  background-color: #192734;
+  color: #8899a6;
+  border: 1px solid #2d3741;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn-cancel:hover { color: #e1e8ed; border-color: #1da1f2; }
+
+.btn-confirm {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-confirm:hover { background-color: #1a91da; }
+.btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Form */
 .form-card {
@@ -276,5 +523,50 @@ function formatDate(dateStr) {
 
 @media (max-width: 768px) {
   .deudas-grid { grid-template-columns: 1fr; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 95vw;
+  }
+
+  .modal-field-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .deuda-card {
+    padding: 14px;
+  }
+
+  .detail-label, .detail-value {
+    font-size: 0.8rem;
+  }
 }
 </style>

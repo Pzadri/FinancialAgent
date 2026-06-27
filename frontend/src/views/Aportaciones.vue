@@ -616,5 +616,18 @@ onMounted(() => {
   .category-card {
     padding: 14px;
   }
+
+  .upload-modal {
+    max-width: 95vw;
+  }
+
+  .status-options {
+    gap: 6px;
+  }
+
+  .status-option {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
 }
 </style>

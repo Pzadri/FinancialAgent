@@ -11,7 +11,6 @@ def get_connection() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
@@ -31,8 +30,9 @@ def get_db():
 
 
 def init_db():
-    """Initialize database schema."""
+    """Initialize database schema and set performance PRAGMAs."""
     with get_db() as conn:
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS ahorro (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +40,9 @@ def init_db():
                 description TEXT DEFAULT '',
                 color TEXT DEFAULT '#1da1f2',
                 balance REAL DEFAULT 0,
-                annual_rate REAL DEFAULT 0
+                annual_rate REAL DEFAULT 0,
+                rate_cap REAL DEFAULT 0,
+                excess_rate REAL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS prestamos (
@@ -136,5 +138,24 @@ def init_db():
                 week_end TEXT NOT NULL,
                 status TEXT DEFAULT 'pendiente',
                 person TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS aportaciones_config (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL,
+                amount REAL DEFAULT 0,
+                person TEXT DEFAULT '',
+                color TEXT DEFAULT '#1da1f2'
+            );
+
+            CREATE TABLE IF NOT EXISTS patrimonio_neto (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                month TEXT NOT NULL UNIQUE,
+                value REAL DEFAULT 0
+            );
+
+            CREATE TABLE IF NOT EXISTS app_auth (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                password_hash TEXT NOT NULL
             );
         """)

@@ -1,6 +1,7 @@
 <template>
+  <!-- Desktop Sidebar -->
   <nav
-    class="sidebar"
+    class="sidebar desktop-sidebar"
     :class="{ expanded: isExpanded }"
     @mouseenter="isExpanded = true"
     @mouseleave="isExpanded = false"
@@ -18,21 +19,63 @@
         </router-link>
       </li>
     </ul>
+
+    <div class="sidebar-footer">
+      <router-link to="/configuracion" class="sidebar-link" active-class="active">
+        <i class="pi pi-cog"></i>
+        <span v-if="isExpanded" class="link-label">Configuración</span>
+      </router-link>
+      <button type="button" class="sidebar-link logout-link" title="Cerrar sesión" @click="handleLogout">
+        <i class="pi pi-sign-out"></i>
+        <span v-if="isExpanded" class="link-label">Cerrar sesión</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav">
+    <router-link
+      v-for="route in mobileRoutes"
+      :key="route.path"
+      :to="route.path"
+      class="mobile-nav-item"
+      active-class="active"
+      :exact="route.path === '/'"
+    >
+      <i :class="route.meta.icon"></i>
+      <span>{{ route.meta.shortLabel || route.meta.label }}</span>
+    </router-link>
+    <router-link to="/configuracion" class="mobile-nav-item" active-class="active">
+      <i class="pi pi-cog"></i>
+      <span>Config</span>
+    </router-link>
+    <button type="button" class="mobile-nav-item logout-mobile" @click="handleLogout">
+      <i class="pi pi-sign-out"></i>
+      <span>Salir</span>
+    </button>
   </nav>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { logout } from '../utils/auth.js'
 
 const router = useRouter()
 const isExpanded = ref(false)
 
 const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
+const mobileRoutes = routes // Show all routes + config in mobile nav
+
+function handleLogout() {
+  logout()
+  router.push({ name: 'Login' })
+}
 </script>
 
 <style scoped>
-.sidebar {
+/* ===== DESKTOP SIDEBAR ===== */
+.desktop-sidebar {
   position: fixed;
   left: 0;
   top: 0;
@@ -47,7 +90,7 @@ const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
   overflow: hidden;
 }
 
-.sidebar.expanded {
+.desktop-sidebar.expanded {
   width: 240px;
 }
 
@@ -110,5 +153,94 @@ const routes = router.getRoutes().filter(r => r.meta && r.meta.label)
 .link-label {
   white-space: nowrap;
   font-size: 0.9rem;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #2d3741;
+  padding: 12px 0;
+}
+
+.logout-link {
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+}
+
+.logout-link:hover {
+  color: #f4212e;
+  background-color: #1c2b3a;
+}
+
+/* ===== MOBILE BOTTOM NAV ===== */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #15202b;
+  border-top: 1px solid #2d3741;
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #8899a6;
+  text-decoration: none;
+  font-size: 0.58rem;
+  padding: 6px 2px;
+  border-radius: 8px;
+  transition: color 0.2s;
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-nav-item i {
+  font-size: 1.15rem;
+}
+
+.mobile-nav-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+.mobile-nav-item.active {
+  color: #1da1f2;
+}
+
+.logout-mobile {
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.logout-mobile:active,
+.logout-mobile:hover {
+  color: #f4212e;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .desktop-sidebar {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+  }
 }
 </style>
