@@ -102,5 +102,17 @@ def update_credit_card(name: str, fields: dict) -> str:
                     (value, name)
                 )
 
+        # Auto-calculate available = credit_limit - debt
+        if "debt" in fields or "creditLimit" in fields:
+            row = conn.execute(
+                "SELECT credit_limit, debt FROM creditos WHERE name = ?", (name,)
+            ).fetchone()
+            if row:
+                available = row["credit_limit"] - row["debt"]
+                conn.execute(
+                    "UPDATE creditos SET available = ? WHERE name = ?",
+                    (available, name)
+                )
+
     cache.invalidate("creditos_cards")
     return mark_updated("creditos")

@@ -9,6 +9,9 @@
         <div class="stat-info">
           <span class="stat-label">Patrimonio Neto</span>
           <span class="stat-value">${{ formatMoney(patrimony) }}</span>
+          <span class="stat-sub" :class="patrimonyVsPrev === null ? '' : patrimonyVsPrev >= 0 ? 'income' : 'expense'">
+            {{ patrimonyVsPrev === null ? 'Sin datos mes anterior' : (patrimonyVsPrev >= 0 ? '+' : '') + patrimonyVsPrev + '% vs mes anterior' }}
+          </span>
         </div>
       </div>
       <div class="stat-card">
@@ -36,9 +39,7 @@
         <div class="stat-info">
           <span class="stat-label">Tasa de Ahorro</span>
           <span class="stat-value">{{ savingsRate }}%</span>
-          <span class="stat-sub" :class="savingsRate >= 30 ? 'income' : 'expense'">
-            Meta: 30% — {{ savingsRate >= 30 ? '✓ Alcanzada' : (30 - savingsRate) + '% por alcanzar' }}
-          </span>
+          <span class="stat-sub">Meta: 30%</span>
         </div>
       </div>
     </div>
@@ -170,7 +171,7 @@
     <div class="row-3">
       <div class="card">
         <div class="card-header">
-          <h3>Ingresos vs Gastos (6 meses)</h3>
+          <h3>Ingresos vs Gastos</h3>
           <router-link to="/gastos-ingresos" class="card-link">Ver detalle →</router-link>
         </div>
         <Line :data="lineChartData" :options="chartOptions" />
@@ -280,10 +281,17 @@ const prevMonthIncome = ref(0)
 const prevMonthExpenses = ref(0)
 const deudas = ref([])
 const totalDeudas = ref(0)
+const prevMonthPatrimony = ref(null)
 
 const totalPortfolio = computed(() => totalSavings.value + totalLoans.value + gbmTotal.value + afore.value)
 const patrimony = computed(() => totalPortfolio.value - totalCreditDebt.value)
 const savingsRate = computed(() => monthlyIncome.value > 0 ? Math.round(((monthlyIncome.value - monthlyExpenses.value) / monthlyIncome.value) * 100) : 0)
+
+// Variación patrimonio vs mes anterior (%)
+const patrimonyVsPrev = computed(() => {
+  if (prevMonthPatrimony.value === null || prevMonthPatrimony.value === 0) return null
+  return Math.round(((patrimony.value - prevMonthPatrimony.value) / Math.abs(prevMonthPatrimony.value)) * 100)
+})
 
 // Variación vs mes anterior (%)
 const incomeVsPrev = computed(() => {
@@ -390,6 +398,21 @@ onMounted(async () => {
     // Deudas
     deudas.value = deudasRes.deudas.sort((a, b) => a.daysUntilPayment - b.daysUntilPayment)
     totalDeudas.value = deudasRes.totalDebt
+
+    // Patrimonio: load previous month for comparison
+    try {
+      const patrimonioRes = await axios.get('/api/patrimonio')
+      const history = patrimonioRes.data.history || []
+      const now2 = new Date()
+      const prevDate2 = new Date(now2.getFullYear(), now2.getMonth() - 1, 1)
+      const prevMonthKey = `${prevDate2.getFullYear()}-${String(prevDate2.getMonth() + 1).padStart(2, '0')}`
+      const prevEntry = history.find(h => h.month === prevMonthKey)
+      if (prevEntry) {
+        prevMonthPatrimony.value = prevEntry.value
+      }
+    } catch (e) {
+      console.error('Error loading patrimonio history:', e)
+    }
 
   } catch (error) {
     console.error('Error loading dashboard data:', error)
@@ -832,6 +855,44 @@ const chartOptions = {
 @media (max-width: 768px) {
   .row-2, .row-3, .row-4 {
     grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
   }
 }
 </style>

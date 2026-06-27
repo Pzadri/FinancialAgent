@@ -75,7 +75,7 @@ echo.
 
 :: ── Abrir navegador ────────────────────────────────────────────────────────
 echo  [4/4] Abriendo Opera...
-start "" "C:\Users\Adria\AppData\Local\Programs\Opera\opera.exe" --new-window "http://localhost:5173"
+start "" "C:\Users\admin\AppData\Local\Programs\Opera\opera.exe" --new-window "http://localhost:5173"
 echo  [4/4] OK - Navegador abierto
 echo.
 

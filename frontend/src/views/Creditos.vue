@@ -89,62 +89,56 @@
 
           <!-- Campos de la tarjeta seleccionada -->
           <div v-if="activeCard" class="card-fields">
-            <div class="fields-row">
-              <div class="modal-field">
-                <label>Saldo a Deber</label>
-                <div class="balance-input-wrap">
-                  <span class="balance-input-prefix">$</span>
-                  <input type="number" step="0.01" min="0" class="balance-input"
-                    :placeholder="formatMoney(currentCardData.debt)"
-                    v-model.number="editFields.debt" />
-                </div>
-              </div>
-              <div class="modal-field">
-                <label>Disponible</label>
-                <div class="balance-input-wrap">
-                  <span class="balance-input-prefix">$</span>
-                  <input type="number" step="0.01" min="0" class="balance-input"
-                    :placeholder="formatMoney(currentCardData.available)"
-                    v-model.number="editFields.available" />
-                </div>
+            <div class="modal-field">
+              <label>Saldo a Deber</label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(currentCardData.debt)"
+                  v-model.number="editFields.debt" />
               </div>
             </div>
-            <div class="fields-row">
-              <div class="modal-field">
-                <label>Pago Mínimo</label>
-                <div class="balance-input-wrap">
-                  <span class="balance-input-prefix">$</span>
-                  <input type="number" step="0.01" min="0" class="balance-input"
-                    :placeholder="formatMoney(currentCardData.minimumPayment)"
-                    v-model.number="editFields.minimumPayment" />
-                </div>
-              </div>
-              <div class="modal-field">
-                <label>Pago para No Generar Intereses</label>
-                <div class="balance-input-wrap">
-                  <span class="balance-input-prefix">$</span>
-                  <input type="number" step="0.01" min="0" class="balance-input"
-                    :placeholder="formatMoney(currentCardData.fullPayment)"
-                    v-model.number="editFields.fullPayment" />
-                </div>
+            <div class="modal-field">
+              <label>Crédito Total</label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(currentCardData.creditLimit)"
+                  v-model.number="editFields.creditLimit" />
               </div>
             </div>
-            <div class="fields-row">
-              <div class="modal-field">
-                <label>Fecha de Corte <span class="field-hint">(YYYY-MM-DD)</span></label>
-                <div class="balance-input-wrap">
-                  <input type="date" class="balance-input date-input"
-                    :placeholder="currentCardData.cutoffDate"
-                    v-model="editFields.cutoffDate" />
-                </div>
+            <div class="modal-field">
+              <label>Pago Mínimo</label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(currentCardData.minimumPayment)"
+                  v-model.number="editFields.minimumPayment" />
               </div>
-              <div class="modal-field">
-                <label>Fecha de Pago <span class="field-hint">(YYYY-MM-DD)</span></label>
-                <div class="balance-input-wrap">
-                  <input type="date" class="balance-input date-input"
-                    :placeholder="currentCardData.paymentDate"
-                    v-model="editFields.paymentDate" />
-                </div>
+            </div>
+            <div class="modal-field">
+              <label>Pago para No Generar Intereses</label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">$</span>
+                <input type="number" step="0.01" min="0" class="balance-input"
+                  :placeholder="formatMoney(currentCardData.fullPayment)"
+                  v-model.number="editFields.fullPayment" />
+              </div>
+            </div>
+            <div class="modal-field">
+              <label>Fecha de Corte</label>
+              <div class="balance-input-wrap">
+                <input type="date" class="balance-input date-input"
+                  :placeholder="currentCardData.cutoffDate"
+                  v-model="editFields.cutoffDate" />
+              </div>
+            </div>
+            <div class="modal-field">
+              <label>Fecha de Pago</label>
+              <div class="balance-input-wrap">
+                <input type="date" class="balance-input date-input"
+                  :placeholder="currentCardData.paymentDate"
+                  v-model="editFields.paymentDate" />
               </div>
             </div>
           </div>
@@ -392,6 +386,10 @@ function getUsageClass(percent) {
 <style scoped>
 .creditos {
   max-width: 1200px;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .page-title {
@@ -404,9 +402,10 @@ function getUsageClass(percent) {
 /* Stats */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  max-width: 100%;
 }
 
 .stat-card {
@@ -469,9 +468,10 @@ function getUsageClass(percent) {
 /* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  max-width: 100%;
 }
 
 .credit-card-item {
@@ -480,6 +480,8 @@ function getUsageClass(percent) {
   border-top: 3px solid;
   border-radius: 12px;
   padding: 20px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-header {
@@ -585,6 +587,7 @@ function getUsageClass(percent) {
   border-radius: 12px;
   padding: 24px;
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .table-card h3 {
@@ -596,6 +599,7 @@ function getUsageClass(percent) {
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
 }
 
 .data-table th {
@@ -660,6 +664,145 @@ function getUsageClass(percent) {
 
   .cards-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .credit-card-item {
+    padding: 16px;
+  }
+
+  .card-header {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .card-brand {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .card-name-section h3 {
+    font-size: 0.95rem;
+  }
+
+  .detail-row {
+    padding: 4px 0;
+  }
+
+  .detail-label {
+    font-size: 0.75rem;
+  }
+
+  .detail-value {
+    font-size: 0.82rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .table-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Hide less important columns on mobile */
+  .data-table th:nth-child(6),
+  .data-table td:nth-child(6),
+  .data-table th:nth-child(7),
+  .data-table td:nth-child(7) {
+    display: none;
+  }
+
+  .update-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-update {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Modal responsive */
+  .upload-modal {
+    max-width: 100%;
+    max-height: calc(100vh - 32px);
+    border-radius: 12px;
+  }
+
+  .upload-modal-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .upload-modal-header {
+    padding: 12px 14px;
+  }
+
+  .upload-modal-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .upload-modal-footer {
+    padding: 12px 14px;
+  }
+
+  .card-tab {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .card-selector {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-card-item {
+    padding: 14px;
+  }
+
+  .card-details {
+    gap: 4px;
+  }
+
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2) {
+    display: none;
   }
 }
 
@@ -674,6 +817,8 @@ function getUsageClass(percent) {
   background-color: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: 10px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .update-banner-info {
@@ -770,6 +915,8 @@ function getUsageClass(percent) {
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  padding: 16px;
+  overflow: hidden;
 }
 
 .upload-modal {
@@ -777,9 +924,11 @@ function getUsageClass(percent) {
   border: 1px solid #2d3741;
   border-radius: 14px;
   width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
@@ -789,6 +938,7 @@ function getUsageClass(percent) {
   align-items: center;
   padding: 18px 20px;
   border-bottom: 1px solid #2d3741;
+  flex-shrink: 0;
 }
 
 .upload-modal-header h3 {
@@ -816,6 +966,10 @@ function getUsageClass(percent) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .upload-hint {
@@ -855,18 +1009,13 @@ function getUsageClass(percent) {
 }
 
 /* Campos */
-.card-fields { display: flex; flex-direction: column; gap: 12px; }
-
-.fields-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+.card-fields { display: flex; flex-direction: column; gap: 14px; }
 
 .modal-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .modal-field label {
@@ -889,6 +1038,9 @@ function getUsageClass(percent) {
   border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 .balance-input-wrap:focus-within { border-color: #1da1f2; }
 
@@ -898,6 +1050,7 @@ function getUsageClass(percent) {
   font-size: 0.9rem;
   border-right: 1px solid #2d3741;
   line-height: 38px;
+  flex-shrink: 0;
 }
 
 .balance-input {
@@ -908,6 +1061,8 @@ function getUsageClass(percent) {
   color: #e1e8ed;
   font-size: 0.88rem;
   padding: 9px 12px;
+  min-width: 0;
+  width: 100%;
 }
 .balance-input::placeholder { color: #4a5568; }
 .balance-input::-webkit-inner-spin-button,
@@ -933,6 +1088,7 @@ function getUsageClass(percent) {
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid #2d3741;
+  flex-shrink: 0;
 }
 
 .btn-cancel {

@@ -2,13 +2,14 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.gbm_reader import get_full_portfolio, parse_nacional_excel, parse_usa_excel, save_gbm_data
-from app.gi_manager import add_record, get_all_records, delete_record
+from app.gi_manager import add_record, get_all_records, delete_record, update_record
 from app.creditos_reader import get_credit_cards
 from app.inversiones_reader import get_all_inversiones
 from app.deudas_manager import get_all_deudas, add_deuda, delete_deuda
 from app.update_tracker import get_status, mark_updated
 from app.database import init_db
 from app import cache
+from app import auth_manager
 
 app = FastAPI(title="Financial Dashboard API", version="1.0.0")
 
@@ -22,6 +23,46 @@ app.add_middleware(
 
 # Initialize database on startup
 init_db()
+# Ensure an auth password exists (seeds default if none set)
+auth_manager.init_auth()
+
+
+# ===== Autenticación =====
+
+class LoginPayload(BaseModel):
+    password: str
+
+
+class ChangePasswordPayload(BaseModel):
+    currentPassword: str
+    newPassword: str
+
+
+@app.get("/api/auth/status")
+async def auth_status():
+    """Indica si hay una contraseña configurada."""
+    return {"passwordSet": auth_manager.is_password_set()}
+
+
+@app.post("/api/auth/login")
+async def auth_login(payload: LoginPayload):
+    """Valida la contraseña contra el hash almacenado en la base de datos."""
+    if not auth_manager.verify_password(payload.password):
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta.")
+    token = auth_manager.create_token()
+    return {"success": True, "token": token}
+
+
+@app.post("/api/auth/change-password")
+async def auth_change_password(payload: ChangePasswordPayload):
+    """Cambia la contraseña tras verificar la actual."""
+    if not auth_manager.verify_password(payload.currentPassword):
+        raise HTTPException(status_code=401, detail="La contraseña actual es incorrecta.")
+    try:
+        auth_manager.set_password(payload.newPassword)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"success": True}
 
 
 @app.get("/api/health")
@@ -65,8 +106,8 @@ async def gbm_portfolio():
 
 @app.get("/api/gbm/update-status")
 async def gbm_update_status():
-    """Check if GBM data needs to be updated (Mondays)."""
-    return get_status("gbm", "monday")
+    """Check if GBM data needs to be updated (Fridays)."""
+    return get_status("gbm", "friday")
 
 
 @app.post("/api/gbm/upload")
@@ -151,6 +192,27 @@ async def gi_delete_record(record_id: int):
     try:
         deleted = delete_record(record_id)
         if not deleted:
+            raise HTTPException(status_code=404, detail="Record not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/api/gi/records/{record_id}")
+async def gi_update_record(record_id: int, payload: GIRecord):
+    """Update a gasto/ingreso record by ID."""
+    try:
+        updated = update_record(
+            record_id=record_id,
+            fecha=payload.date,
+            descripcion=payload.description,
+            categoria=payload.category,
+            tipo=payload.type,
+            monto=payload.amount
+        )
+        if not updated:
             raise HTTPException(status_code=404, detail="Record not found")
         return {"success": True}
     except HTTPException:
@@ -271,6 +333,27 @@ class PrestamoUpdate(BaseModel):
     rate: float | None = None
     term: str | None = None
     status: str | None = None
+
+
+class NuevoPrestamoPayload(BaseModel):
+    principal: float
+    rate: float
+    termMonths: int
+
+
+@app.post("/api/inversiones/prestamos")
+async def prestamos_create(payload: NuevoPrestamoPayload):
+    """Create a new loan (prestamo)."""
+    from app.inversiones_reader import create_prestamo
+    try:
+        loan = create_prestamo(
+            principal=payload.principal,
+            rate=payload.rate,
+            term_months=payload.termMonths
+        )
+        return {"success": True, "loan": loan}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class PrestamosUpdatePayload(BaseModel):
@@ -403,5 +486,310 @@ async def aportaciones_update_status(payload: AportacionStatusUpdate):
         return {"success": True}
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== Configuración =====
+
+# --- Ahorro CRUD ---
+
+class AhorroCreate(BaseModel):
+    name: str
+    description: str = ""
+    annualRate: float = 0
+    color: str = "#1da1f2"
+    rateCap: float = 0
+    excessRate: float = 0
+
+
+class AhorroUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    annualRate: float | None = None
+    color: str | None = None
+    rateCap: float | None = None
+    excessRate: float | None = None
+
+
+@app.get("/api/config/ahorro")
+async def config_ahorro_list():
+    """List all savings accounts."""
+    from app.database import get_db
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM ahorro").fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.post("/api/config/ahorro")
+async def config_ahorro_create(payload: AhorroCreate):
+    """Create a new savings account."""
+    from app.database import get_db
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO ahorro (name, description, color, balance, annual_rate, rate_cap, excess_rate) VALUES (?, ?, ?, 0, ?, ?, ?)",
+            (payload.name, payload.description, payload.color, payload.annualRate, payload.rateCap, payload.excessRate)
+        )
+        new_id = cursor.lastrowid
+    cache.invalidate("inversiones_all")
+    return {"success": True, "id": new_id}
+
+
+@app.put("/api/config/ahorro/{account_id}")
+async def config_ahorro_update(account_id: int, payload: AhorroUpdate):
+    """Update a savings account."""
+    from app.database import get_db
+    fields = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    field_map = {"name": "name", "description": "description", "annualRate": "annual_rate", "color": "color", "rateCap": "rate_cap", "excessRate": "excess_rate"}
+    with get_db() as conn:
+        for api_field, value in fields.items():
+            col = field_map.get(api_field)
+            if col:
+                conn.execute(f"UPDATE ahorro SET {col} = ? WHERE id = ?", (value, account_id))
+    cache.invalidate("inversiones_all")
+    return {"success": True}
+
+
+@app.delete("/api/config/ahorro/{account_id}")
+async def config_ahorro_delete(account_id: int):
+    """Delete a savings account."""
+    from app.database import get_db
+    with get_db() as conn:
+        result = conn.execute("DELETE FROM ahorro WHERE id = ?", (account_id,))
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Account not found")
+    cache.invalidate("inversiones_all")
+    return {"success": True}
+
+
+# --- Creditos CRUD ---
+
+class CreditoCreate(BaseModel):
+    name: str
+    color: str = "#1da1f2"
+
+
+class CreditoConfigUpdate(BaseModel):
+    name: str | None = None
+    color: str | None = None
+
+
+@app.get("/api/config/creditos")
+async def config_creditos_list():
+    """List all credit cards (config fields only)."""
+    from app.database import get_db
+    with get_db() as conn:
+        rows = conn.execute("SELECT id, name, color FROM creditos").fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.post("/api/config/creditos")
+async def config_creditos_create(payload: CreditoCreate):
+    """Create a new credit card."""
+    from app.database import get_db
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO creditos (name, color) VALUES (?, ?)",
+            (payload.name, payload.color)
+        )
+        new_id = cursor.lastrowid
+    cache.invalidate("creditos_cards")
+    return {"success": True, "id": new_id}
+
+
+@app.put("/api/config/creditos/{card_id}")
+async def config_creditos_update(card_id: int, payload: CreditoConfigUpdate):
+    """Update a credit card's config fields."""
+    from app.database import get_db
+    fields = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    with get_db() as conn:
+        for field, value in fields.items():
+            conn.execute(f"UPDATE creditos SET {field} = ? WHERE id = ?", (value, card_id))
+    cache.invalidate("creditos_cards")
+    return {"success": True}
+
+
+@app.delete("/api/config/creditos/{card_id}")
+async def config_creditos_delete(card_id: int):
+    """Delete a credit card."""
+    from app.database import get_db
+    with get_db() as conn:
+        result = conn.execute("DELETE FROM creditos WHERE id = ?", (card_id,))
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Card not found")
+    cache.invalidate("creditos_cards")
+    return {"success": True}
+
+
+# --- Aportaciones Config CRUD ---
+
+class AportacionConfigCreate(BaseModel):
+    category: str
+    amount: float
+    person: str = ""
+    color: str = "#1da1f2"
+
+
+class AportacionConfigUpdate(BaseModel):
+    category: str | None = None
+    amount: float | None = None
+    person: str | None = None
+    color: str | None = None
+
+
+@app.get("/api/config/aportaciones")
+async def config_aportaciones_list():
+    """List all aportaciones config entries."""
+    from app.database import get_db
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM aportaciones_config").fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.post("/api/config/aportaciones")
+async def config_aportaciones_create(payload: AportacionConfigCreate):
+    """Create a new aportacion config."""
+    from app.database import get_db
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO aportaciones_config (category, amount, person, color) VALUES (?, ?, ?, ?)",
+            (payload.category, payload.amount, payload.person, payload.color)
+        )
+        new_id = cursor.lastrowid
+
+        # Sync Afore voluntary contribution
+        if payload.category.lower() == "afore" and not payload.person:
+            conn.execute("UPDATE afore SET voluntary_contribution = ? WHERE id = 1", (payload.amount,))
+            cache.invalidate("inversiones_all")
+
+    cache.invalidate_prefix("aportaciones")
+    return {"success": True, "id": new_id}
+
+
+@app.put("/api/config/aportaciones/{config_id}")
+async def config_aportaciones_update(config_id: int, payload: AportacionConfigUpdate):
+    """Update an aportacion config entry."""
+    from app.database import get_db
+    fields = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    with get_db() as conn:
+        for field, value in fields.items():
+            conn.execute(f"UPDATE aportaciones_config SET {field} = ? WHERE id = ?", (value, config_id))
+
+        # Sync Afore voluntary contribution if amount changed
+        if "amount" in fields:
+            row = conn.execute("SELECT category, person FROM aportaciones_config WHERE id = ?", (config_id,)).fetchone()
+            if row and row["category"].lower() == "afore" and not row["person"]:
+                conn.execute("UPDATE afore SET voluntary_contribution = ? WHERE id = 1", (fields["amount"],))
+                cache.invalidate("inversiones_all")
+
+    cache.invalidate_prefix("aportaciones")
+    return {"success": True}
+
+
+@app.delete("/api/config/aportaciones/{config_id}")
+async def config_aportaciones_delete(config_id: int):
+    """Delete an aportacion config entry."""
+    from app.database import get_db
+    with get_db() as conn:
+        result = conn.execute("DELETE FROM aportaciones_config WHERE id = ?", (config_id,))
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Config not found")
+    cache.invalidate_prefix("aportaciones")
+    return {"success": True}
+
+
+# ===== Patrimonio Neto =====
+
+@app.get("/api/patrimonio")
+async def patrimonio_get():
+    """Get patrimonio neto history (last 6 months).
+    Automatically takes a snapshot on the 1st of the current month if not already done."""
+    from app.database import get_db
+    from datetime import date as d
+
+    today = d.today()
+    current_month_key = f"{today.year}-{str(today.month).zfill(2)}"
+
+    # Auto-snapshot on the 1st (or first access of the month)
+    with get_db() as conn:
+        existing = conn.execute(
+            "SELECT id FROM patrimonio_neto WHERE month = ?", (current_month_key,)
+        ).fetchone()
+
+    if not existing:
+        # Calculate current patrimonio neto
+        try:
+            inversiones = get_all_inversiones()
+            gbm = get_full_portfolio()
+            creditos = get_credit_cards()
+
+            total_savings = sum(a["balance"] for a in inversiones.get("ahorro", []))
+            total_loans = inversiones.get("summary", {}).get("totalLoans", 0)
+            gbm_total = gbm.get("summary", {}).get("totalValueMXN", 0)
+            afore_balance = inversiones.get("afore", {}).get("balance", 0)
+            total_portfolio = total_savings + total_loans + gbm_total + afore_balance
+
+            total_credit_debt = creditos.get("summary", {}).get("totalDebt", 0)
+            patrimonio = total_portfolio - total_credit_debt
+
+            with get_db() as conn:
+                conn.execute(
+                    "INSERT INTO patrimonio_neto (month, value) VALUES (?, ?)",
+                    (current_month_key, round(patrimonio, 2))
+                )
+        except Exception:
+            pass
+
+    # Return last 6 months
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT month, value FROM patrimonio_neto ORDER BY month DESC LIMIT 6"
+        ).fetchall()
+
+    # Reverse to chronological order
+    history = [{"month": row["month"], "value": row["value"]} for row in reversed(rows)]
+    return {"history": history}
+
+
+@app.post("/api/patrimonio/snapshot")
+async def patrimonio_snapshot():
+    """Force a patrimonio neto snapshot for the current month (creates or updates)."""
+    from app.database import get_db
+    from datetime import date as d
+
+    today = d.today()
+    current_month_key = f"{today.year}-{str(today.month).zfill(2)}"
+
+    try:
+        inversiones = get_all_inversiones()
+        gbm = get_full_portfolio()
+        creditos = get_credit_cards()
+
+        total_savings = sum(a["balance"] for a in inversiones.get("ahorro", []))
+        total_loans = inversiones.get("summary", {}).get("totalLoans", 0)
+        gbm_total = gbm.get("summary", {}).get("totalValueMXN", 0)
+        afore_balance = inversiones.get("afore", {}).get("balance", 0)
+        total_portfolio = total_savings + total_loans + gbm_total + afore_balance
+
+        total_credit_debt = creditos.get("summary", {}).get("totalDebt", 0)
+        patrimonio = total_portfolio - total_credit_debt
+
+        with get_db() as conn:
+            conn.execute(
+                """INSERT INTO patrimonio_neto (month, value) VALUES (?, ?)
+                   ON CONFLICT(month) DO UPDATE SET value = ?""",
+                (current_month_key, round(patrimonio, 2), round(patrimonio, 2))
+            )
+
+        return {"success": True, "month": current_month_key, "value": round(patrimonio, 2)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

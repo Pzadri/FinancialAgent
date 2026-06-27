@@ -189,83 +189,94 @@
     <!-- SECCIÓN: PRÉSTAMOS -->
     <div v-if="activeTab === 'loans'" class="section-content">
 
-      <!-- Banner de actualización Préstamos (solo día 15 del mes sin actualizar) -->
-      <div v-if="prestamosUpdateStatus.needsUpdate" class="update-banner">
-        <div class="update-banner-info">
-          <i class="pi pi-refresh"></i>
-          <div>
-            <span class="update-banner-title">Préstamos pendientes de actualizar</span>
-            <span class="update-banner-sub">
-              Es día 15 del mes — revisa y actualiza tus préstamos.
-              <span v-if="prestamosUpdateStatus.lastUpdate">
-                Última actualización: {{ formatDate(prestamosUpdateStatus.lastUpdate) }}
-                (hace {{ prestamosUpdateStatus.daysSinceUpdate }} días)
-              </span>
-              <span v-else>Nunca actualizado.</span>
-            </span>
-          </div>
+      <div class="loans-header-info">
+        <div class="loans-header-row">
+          <div></div>
+          <button class="btn-new-loan" @click="showNuevoPrestamoModal = true">
+            <i class="pi pi-plus"></i> Nuevo Préstamo
+          </button>
         </div>
-        <button class="btn-update" @click="showPrestamosModal = true">
-          <i class="pi pi-pencil"></i> Actualizar datos
-        </button>
       </div>
 
-      <!-- Indicador de última actualización Préstamos -->
-      <div v-else-if="prestamosUpdateStatus.lastUpdate" class="update-ok">
-        <i class="pi pi-check-circle"></i>
-        <span>Préstamos actualizados el {{ formatDate(prestamosUpdateStatus.lastUpdate) }}</span>
-        <button class="btn-update-sm" @click="showPrestamosModal = true">
-          <i class="pi pi-pencil"></i> Editar datos
-        </button>
-      </div>
-
-      <!-- Modal de actualización Préstamos -->
-      <div v-if="showPrestamosModal" class="upload-overlay" @click.self="showPrestamosModal = false">
+      <!-- Modal Nuevo Préstamo -->
+      <div v-if="showNuevoPrestamoModal" class="upload-overlay" @click.self="showNuevoPrestamoModal = false">
         <div class="upload-modal">
           <div class="upload-modal-header">
-            <h3><i class="pi pi-users"></i> Actualizar Préstamos</h3>
-            <button class="btn-close" @click="showPrestamosModal = false"><i class="pi pi-times"></i></button>
+            <h3><i class="pi pi-plus-circle"></i> Nuevo Préstamo</h3>
+            <button class="btn-close" @click="showNuevoPrestamoModal = false"><i class="pi pi-times"></i></button>
           </div>
 
           <div class="upload-modal-body">
-            <p class="upload-hint">Actualiza el capital vigente de cada préstamo. Los campos vacíos no se modificarán.</p>
+            <p class="upload-hint">Registra un nuevo préstamo. El interés y retorno total se calculan automáticamente.</p>
 
-            <div v-for="loan in loans" :key="loan.id" class="balance-field">
+            <div class="balance-field">
               <label>
                 <span class="balance-field-dot" style="background-color: #10b981"></span>
-                {{ loan.borrower }}
-                <span class="balance-field-desc">{{ loan.term }} · {{ loan.rate }}%</span>
+                Monto del Préstamo (Capital)
               </label>
               <div class="balance-input-wrap">
                 <span class="balance-input-prefix">$</span>
-                <input type="number" step="0.01" min="0" class="balance-input"
-                  :placeholder="formatMoney(loan.principal)"
-                  v-model.number="prestamosFormData[loan.id]" />
+                <input type="number" step="0.01" min="0.01" class="balance-input"
+                  placeholder="0.00"
+                  v-model.number="nuevoPrestamoForm.principal" />
               </div>
             </div>
 
-            <div v-if="prestamosUpdateError" class="upload-error">
-              <i class="pi pi-exclamation-triangle"></i> {{ prestamosUpdateError }}
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #f59e0b"></span>
+                Tasa (%)
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">%</span>
+                <input type="number" step="0.01" min="0.01" class="balance-input"
+                  placeholder="0.00"
+                  v-model.number="nuevoPrestamoForm.rate" />
+              </div>
+            </div>
+
+            <div class="balance-field">
+              <label>
+                <span class="balance-field-dot" style="background-color: #1da1f2"></span>
+                Plazo (meses)
+              </label>
+              <div class="balance-input-wrap">
+                <span class="balance-input-prefix">#</span>
+                <input type="number" min="1" class="balance-input"
+                  placeholder="12"
+                  v-model.number="nuevoPrestamoForm.termMonths" />
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div v-if="nuevoPrestamoForm.principal && nuevoPrestamoForm.rate && nuevoPrestamoForm.termMonths" class="nuevo-prestamo-preview">
+              <div class="preview-row">
+                <span>Interés Esperado</span>
+                <span class="income">+${{ formatMoney(nuevoPrestamoInterest) }}</span>
+              </div>
+              <div class="preview-row">
+                <span>Retorno Total</span>
+                <span class="highlight">$ {{ formatMoney(nuevoPrestamoTotal) }}</span>
+              </div>
+            </div>
+
+            <div v-if="nuevoPrestamoError" class="upload-error">
+              <i class="pi pi-exclamation-triangle"></i> {{ nuevoPrestamoError }}
             </div>
           </div>
 
           <div class="upload-modal-footer">
-            <button class="btn-cancel" @click="showPrestamosModal = false">Cancelar</button>
+            <button class="btn-cancel" @click="showNuevoPrestamoModal = false">Cancelar</button>
             <button
               class="btn-upload-confirm"
-              :disabled="prestamosUpdating || !hasAnyPrestamoField"
-              @click="submitPrestamosData"
+              :disabled="nuevoPrestamoSubmitting || !nuevoPrestamoValid"
+              @click="submitNuevoPrestamo"
             >
-              <i :class="prestamosUpdating ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
-              {{ prestamosUpdating ? 'Guardando...' : 'Guardar datos' }}
+              <i :class="nuevoPrestamoSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i>
+              {{ nuevoPrestamoSubmitting ? 'Registrando...' : 'Registrar Préstamo' }}
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="loans-header-info">
-        <h2>Yo Te Presto</h2>
-        <p class="section-desc">Préstamos activos con diferentes tasas de retorno</p>
       </div>
 
       <div class="loans-summary">
@@ -461,10 +472,6 @@
 
     <!-- SECCIÓN: GBM -->
     <div v-if="activeTab === 'gbm'" class="section-content">
-      <div class="gbm-header-info">
-        <h2>GBM - Inversiones</h2>
-        <p class="section-desc">Portafolio de inversiones nacionales e internacionales (datos desde Excel)</p>
-      </div>
 
       <!-- Banner de actualización GBM (solo lunes sin actualizar) -->
       <div v-if="gbmUpdateStatus.needsUpdate" class="update-banner">
@@ -473,7 +480,7 @@
           <div>
             <span class="update-banner-title">Portafolio GBM pendiente de actualizar</span>
             <span class="update-banner-sub">
-              Es lunes — sube los archivos Excel descargados de la app GBM.
+              Es viernes — sube los archivos Excel descargados de la app GBM.
               <span v-if="gbmUpdateStatus.lastUpdate">
                 Última actualización: {{ formatDate(gbmUpdateStatus.lastUpdate) }}
                 (hace {{ gbmUpdateStatus.daysSinceUpdate }} días)
@@ -573,19 +580,27 @@
           </div>
         </div>
 
-        <!-- Gráficas -->
+        <!-- Gráficas de distribución -->
         <div class="charts-grid">
           <div class="chart-card">
-            <h3>Distribución del Portafolio</h3>
-            <Doughnut :data="gbmDistributionData" :options="doughnutOptions" />
+            <h3>Portafolio Nacional (MXN)</h3>
+            <Doughnut :data="gbmNacionalDistribution" :options="doughnutOptions" />
           </div>
+          <div class="chart-card">
+            <h3>Portafolio USA (USD)</h3>
+            <Doughnut :data="gbmUsaDistribution" :options="doughnutOptions" />
+          </div>
+        </div>
+
+        <!-- Gráficas de rendimiento -->
+        <div class="charts-grid">
           <div class="chart-card">
             <h3>Rendimiento por Instrumento (%)</h3>
             <Bar :data="gbmPerformanceData" :options="barOptions" />
-            <div class="performance-cash-chart">
-              <h4>Rendimiento en Efectivo ($)</h4>
-              <Bar :data="gbmCashPerformanceData" :options="barOptions" />
-            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Rendimiento en Efectivo ($)</h3>
+            <Bar :data="gbmCashPerformanceData" :options="barOptions" />
           </div>
         </div>
 
@@ -619,6 +634,21 @@
                 </td>
               </tr>
             </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td><strong>Total</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><strong>${{ formatMoney(gbmNacionalTotals.marketValue) }}</strong></td>
+                <td :class="gbmNacionalTotals.gainLoss >= 0 ? 'income' : 'expense'">
+                  <strong>{{ gbmNacionalTotals.gainLoss >= 0 ? '+' : '' }}${{ formatMoney(gbmNacionalTotals.gainLoss) }}</strong>
+                </td>
+                <td :class="gbmNacionalTotals.returnPct >= 0 ? 'income' : 'expense'">
+                  <strong>{{ gbmNacionalTotals.returnPct >= 0 ? '+' : '' }}{{ formatPct(gbmNacionalTotals.returnPct) }}%</strong>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 
@@ -652,6 +682,21 @@
                 </td>
               </tr>
             </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td><strong>Total</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><strong>${{ formatMoney(gbmUsaTotals.marketValue) }}</strong></td>
+                <td :class="gbmUsaTotals.gainLoss >= 0 ? 'income' : 'expense'">
+                  <strong>{{ gbmUsaTotals.gainLoss >= 0 ? '+' : '' }}${{ formatMoney(gbmUsaTotals.gainLoss) }}</strong>
+                </td>
+                <td :class="gbmUsaTotals.returnPct >= 0 ? 'income' : 'expense'">
+                  <strong>{{ gbmUsaTotals.returnPct >= 0 ? '+' : '' }}{{ formatPct(gbmUsaTotals.returnPct) }}%</strong>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -717,10 +762,10 @@ const afore = reactive({
   voluntaryContribution: 0
 })
 
-function getCompoundData(balance, annualRate, periodKey) {
+function getCompoundData(balance, annualRate, periodKey, rateCap = 0, excessRate = 0) {
   const period = periods.find(p => p.key === periodKey)
   const days = period.days
-  const dailyRate = annualRate / 100 / 365
+  const taxRate = 0.9
   const points = []
   const labels = []
 
@@ -734,7 +779,16 @@ function getCompoundData(balance, annualRate, periodKey) {
 
   for (let i = 0; i <= numPoints; i++) {
     const dayAt = Math.round((days / numPoints) * i)
-    const value = balance * Math.pow(1 + dailyRate, dayAt)
+    let value = balance
+    for (let d = 0; d < dayAt; d++) {
+      let dailyGain
+      if (rateCap > 0 && value > rateCap) {
+        dailyGain = (rateCap * (annualRate - taxRate) / 100 / 365) + ((value - rateCap) * (excessRate - taxRate) / 100 / 365)
+      } else {
+        dailyGain = value * (annualRate - taxRate) / 100 / 365
+      }
+      value += dailyGain
+    }
     points.push(Math.round(value * 100) / 100)
 
     if (days <= 7) labels.push(`Día ${i}`)
@@ -747,7 +801,7 @@ function getCompoundData(balance, annualRate, periodKey) {
 }
 
 function getCompoundChart(account) {
-  const data = getCompoundData(account.balance, account.annualRate, account.selectedPeriod)
+  const data = getCompoundData(account.balance, account.annualRate, account.selectedPeriod, account.rateCap || 0, account.excessRate || 0)
   return {
     labels: data.labels,
     datasets: [{
@@ -764,8 +818,20 @@ function getCompoundChart(account) {
 
 function getProjection(account) {
   const period = periods.find(p => p.key === account.selectedPeriod)
-  const dailyRate = account.annualRate / 100 / 365
-  return account.balance * Math.pow(1 + dailyRate, period.days)
+  const taxRate = 0.9
+  const rateCap = account.rateCap || 0
+  const excessRate = account.excessRate || 0
+  let value = account.balance
+  for (let d = 0; d < period.days; d++) {
+    let dailyGain
+    if (rateCap > 0 && value > rateCap) {
+      dailyGain = (rateCap * (account.annualRate - taxRate) / 100 / 365) + ((value - rateCap) * (excessRate - taxRate) / 100 / 365)
+    } else {
+      dailyGain = value * (account.annualRate - taxRate) / 100 / 365
+    }
+    value += dailyGain
+  }
+  return value
 }
 
 const lineOptions = {
@@ -843,20 +909,57 @@ const gbmSummary = ref({
 
 const gbmColors = ['#1da1f2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#e11d48', '#a855f7']
 
-const gbmDistributionData = computed(() => {
-  const allInstruments = [...gbmNacional.value, ...gbmUSA.value]
+const gbmNacionalDistribution = computed(() => {
+  const instruments = gbmNacional.value
+  const total = instruments.reduce((s, i) => s + i.marketValue, 0)
   return {
-    labels: allInstruments.map(i => i.ticker),
+    labels: instruments.map(i => i.ticker),
     datasets: [{
-      data: allInstruments.map(i => i.marketValue),
-      backgroundColor: allInstruments.map((_, idx) => gbmColors[idx % gbmColors.length]),
+      data: instruments.map(i => total > 0 ? Math.round((i.marketValue / total) * 1000) / 10 : 0),
+      backgroundColor: instruments.map((_, idx) => gbmColors[idx % gbmColors.length]),
       borderWidth: 0
     }]
   }
 })
 
+const gbmUsaDistribution = computed(() => {
+  const instruments = gbmUSA.value
+  const total = instruments.reduce((s, i) => s + i.marketValue, 0)
+  return {
+    labels: instruments.map(i => i.ticker),
+    datasets: [{
+      data: instruments.map(i => total > 0 ? Math.round((i.marketValue / total) * 1000) / 10 : 0),
+      backgroundColor: instruments.map((_, idx) => gbmColors[(idx + 5) % gbmColors.length]),
+      borderWidth: 0
+    }]
+  }
+})
+
+const gbmInstrumentsOnly = computed(() => {
+  const cashSections = ['Efectivo', 'Liquidez']
+  return [...gbmNacional.value, ...gbmUSA.value].filter(i => !cashSections.includes(i.section))
+})
+
+const gbmNacionalTotals = computed(() => {
+  const items = gbmNacional.value
+  const marketValue = items.reduce((s, i) => s + i.marketValue, 0)
+  const gainLoss = items.reduce((s, i) => s + i.gainLoss, 0)
+  const totalCost = items.reduce((s, i) => s + (i.avgCost * i.shares), 0)
+  const returnPct = totalCost > 0 ? ((marketValue - totalCost) / totalCost) * 100 : 0
+  return { marketValue, gainLoss, returnPct }
+})
+
+const gbmUsaTotals = computed(() => {
+  const items = gbmUSA.value
+  const marketValue = items.reduce((s, i) => s + i.marketValue, 0)
+  const gainLoss = items.reduce((s, i) => s + i.gainLoss, 0)
+  const totalCost = items.reduce((s, i) => s + (i.avgCost * i.shares), 0)
+  const returnPct = totalCost > 0 ? ((marketValue - totalCost) / totalCost) * 100 : 0
+  return { marketValue, gainLoss, returnPct }
+})
+
 const gbmPerformanceData = computed(() => {
-  const allInstruments = [...gbmNacional.value, ...gbmUSA.value].filter(i => i.returnPct !== 0)
+  const allInstruments = gbmInstrumentsOnly.value.filter(i => i.returnPct !== 0)
   return {
     labels: allInstruments.map(i => i.ticker),
     datasets: [{
@@ -868,10 +971,8 @@ const gbmPerformanceData = computed(() => {
   }
 })
 
-const allGbmInstruments = computed(() => [...gbmNacional.value, ...gbmUSA.value].filter(i => i.gainLoss !== 0))
-
 const gbmCashPerformanceData = computed(() => {
-  const instruments = allGbmInstruments.value
+  const instruments = gbmInstrumentsOnly.value.filter(i => i.gainLoss !== 0)
   return {
     labels: instruments.map(i => i.ticker),
     datasets: [{
@@ -989,6 +1090,49 @@ const prestamosFormData = ref({})
 const hasAnyPrestamoField = computed(() =>
   Object.values(prestamosFormData.value).some(v => v !== null && v !== undefined && v !== '')
 )
+
+// ===== MODAL NUEVO PRÉSTAMO =====
+const showNuevoPrestamoModal = ref(false)
+const nuevoPrestamoSubmitting = ref(false)
+const nuevoPrestamoError = ref('')
+const nuevoPrestamoForm = ref({ principal: null, rate: null, termMonths: null })
+
+const nuevoPrestamoValid = computed(() =>
+  nuevoPrestamoForm.value.principal > 0 && nuevoPrestamoForm.value.rate > 0 && nuevoPrestamoForm.value.termMonths > 0
+)
+
+const nuevoPrestamoInterest = computed(() => {
+  const f = nuevoPrestamoForm.value
+  if (!f.principal || !f.rate || !f.termMonths) return 0
+  return f.principal * (f.rate / 100) * (f.termMonths / 12)
+})
+
+const nuevoPrestamoTotal = computed(() => {
+  const f = nuevoPrestamoForm.value
+  if (!f.principal) return 0
+  return f.principal + nuevoPrestamoInterest.value
+})
+
+async function submitNuevoPrestamo() {
+  nuevoPrestamoSubmitting.value = true
+  nuevoPrestamoError.value = ''
+  try {
+    await axios.post('/api/inversiones/prestamos', {
+      principal: nuevoPrestamoForm.value.principal,
+      rate: nuevoPrestamoForm.value.rate,
+      termMonths: nuevoPrestamoForm.value.termMonths
+    })
+    // Recargar datos
+    savingsAccounts.splice(0)
+    await loadInversiones()
+    showNuevoPrestamoModal.value = false
+    nuevoPrestamoForm.value = { principal: null, rate: null, termMonths: null }
+  } catch (e) {
+    nuevoPrestamoError.value = e.response?.data?.detail || 'Error al registrar el préstamo.'
+  } finally {
+    nuevoPrestamoSubmitting.value = false
+  }
+}
 
 async function submitPrestamosData() {
   prestamosUpdating.value = true
@@ -1116,7 +1260,14 @@ onMounted(() => {
 const doughnutOptions = {
   responsive: true,
   plugins: {
-    legend: { position: 'bottom', labels: { color: '#8899a6', padding: 12 } }
+    legend: { position: 'bottom', labels: { color: '#8899a6', padding: 12 } },
+    tooltip: {
+      callbacks: {
+        label: function(context) {
+          return `${context.label}: ${context.parsed}%`
+        }
+      }
+    }
   }
 }
 
@@ -1392,6 +1543,13 @@ function formatDate(dateStr) {
 
 .data-table tr:hover td { background-color: #1c2b3a; }
 
+.data-table .total-row td {
+  border-top: 2px solid #3d4f5f;
+  border-bottom: none;
+  background-color: #1a2733;
+  padding: 14px;
+}
+
 .rate-badge-sm {
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
@@ -1563,8 +1721,95 @@ function formatDate(dateStr) {
 @media (max-width: 768px) {
   .charts-grid { grid-template-columns: 1fr; }
   .savings-cards { grid-template-columns: 1fr; }
-  .loans-summary, .gbm-summary { flex-direction: column; }
+  .loans-summary, .gbm-summary { flex-direction: column; gap: 12px; }
   .section-tabs { flex-wrap: wrap; }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .table-card {
+    padding: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+    font-size: 0.72rem;
+  }
+
+  /* Hide less critical columns on mobile */
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3),
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4) {
+    display: none;
+  }
+
+  .update-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-update {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .upload-modal {
+    width: 95vw;
+    max-height: 90vh;
+  }
+
+  .period-selector {
+    flex-wrap: wrap;
+  }
+
+  .afore-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .afore-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .section-tabs {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .tab-btn {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
 }
 
 /* ── Banner de actualización ─────────────────────────────────────────── */
@@ -1868,4 +2113,48 @@ function formatDate(dateStr) {
 .balance-input::placeholder { color: #4a5568; }
 .balance-input::-webkit-inner-spin-button,
 .balance-input::-webkit-outer-spin-button { opacity: 0.4; }
+
+/* Botón Nuevo Préstamo */
+.loans-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.btn-new-loan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.btn-new-loan:hover { background-color: #059669; }
+
+.nuevo-prestamo-preview {
+  background-color: #0d1821;
+  border: 1px solid #2d3741;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #8899a6;
+}
+.preview-row .income { color: #10b981; font-weight: 600; }
+.preview-row .highlight { color: #f59e0b; font-weight: 600; }
 </style>

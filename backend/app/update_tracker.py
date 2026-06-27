@@ -28,6 +28,11 @@ def is_monday() -> bool:
     return date.today().weekday() == 0
 
 
+def is_friday() -> bool:
+    """Returns True if today is Friday (weekday 4)."""
+    return date.today().weekday() == 4
+
+
 def is_first_of_month() -> bool:
     """Returns True if today is the 1st day of the month."""
     return date.today().day == 1
@@ -41,6 +46,7 @@ def is_fifteenth() -> bool:
 # Map of schedule types to their check functions
 SCHEDULE_CHECKS = {
     "monday": is_monday,
+    "friday": is_friday,
     "first_of_month": is_first_of_month,
     "fifteenth": is_fifteenth,
 }
@@ -68,6 +74,7 @@ def get_status(section: str, schedule: str = "monday") -> dict:
 
     schedule_labels = {
         "monday": "isMonday",
+        "friday": "isFriday",
         "first_of_month": "isFirstOfMonth",
         "fifteenth": "isFifteenth",
     }

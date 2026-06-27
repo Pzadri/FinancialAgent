@@ -3,14 +3,30 @@ from datetime import date, timedelta
 from app.database import get_db
 from app import cache
 
-# Configuration for contributions
-APORTACIONES_CONFIG = [
-    {"category": "Ahorro Familiar", "amount": 200, "person": "Adrian"},
-    {"category": "Ahorro Familiar", "amount": 200, "person": "Karime"},
-    {"category": "Nu", "amount": 50, "person": ""},
-    {"category": "GBM", "amount": 50, "person": ""},
-    {"category": "Afore", "amount": 60, "person": ""},
+# Fallback config (used only if DB table is empty)
+_DEFAULT_CONFIG = [
+    {"category": "Ahorro Familiar", "amount": 200, "person": "Adrian", "color": "#f59e0b"},
+    {"category": "Ahorro Familiar", "amount": 200, "person": "Karime", "color": "#f59e0b"},
+    {"category": "Nu", "amount": 50, "person": "", "color": "#8b5cf6"},
+    {"category": "GBM", "amount": 50, "person": "", "color": "#1da1f2"},
+    {"category": "Afore", "amount": 60, "person": "", "color": "#10b981"},
 ]
+
+
+def _get_aportaciones_config() -> list[dict]:
+    """Get aportaciones config from DB, seeding defaults if empty."""
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM aportaciones_config").fetchall()
+        if rows:
+            return [{"category": r["category"], "amount": r["amount"], "person": r["person"], "color": r["color"]} for r in rows]
+
+        # Seed defaults
+        for c in _DEFAULT_CONFIG:
+            conn.execute(
+                "INSERT INTO aportaciones_config (category, amount, person, color) VALUES (?, ?, ?, ?)",
+                (c["category"], c["amount"], c["person"], c["color"])
+            )
+    return list(_DEFAULT_CONFIG)
 
 
 def _get_weeks_of_month(year: int, month: int) -> list[dict]:
@@ -72,7 +88,7 @@ def ensure_month_records(year: int, month: int):
 
     with get_db() as conn:
         for week in weeks:
-            for config in APORTACIONES_CONFIG:
+            for config in _get_aportaciones_config():
                 existing = conn.execute(
                     """SELECT id, status, week_end FROM aportaciones
                        WHERE category = ? AND week_start = ? AND person = ?""",
@@ -153,7 +169,7 @@ def get_aportaciones(year: int, month: int) -> dict:
         if key not in categories:
             # Find amount from config
             amount = 0
-            for c in APORTACIONES_CONFIG:
+            for c in _get_aportaciones_config():
                 if c["category"] == cat and c["person"] == person:
                     amount = c["amount"]
                     break
